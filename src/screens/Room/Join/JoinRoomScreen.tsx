@@ -1,29 +1,19 @@
-import React, { useRef } from 'react';
-import { ActivityIndicator, List, MD3Colors, MD3DarkTheme, Text, useTheme } from 'react-native-paper';
-import { useEffect, useMemo, useState } from 'react';
-import { Animated, View } from 'react-native';
-import {
-	getBrand,
-	getModel,
-	getDeviceName,
-	getDeviceNameSync, getDeviceType, getDeviceTypeSync, getCarrierSync, getManufacturerSync, getSystemName, getDeviceId
-} from 'react-native-device-info';
-import NetInfo, { useNetInfo } from '@react-native-community/netinfo';
+import React, { useEffect, useMemo, useState } from 'react';
+import { ActivityIndicator, List, MD3DarkTheme, Text, useTheme } from 'react-native-paper';
+import { View } from 'react-native';
+import { useNetInfo } from '@react-native-community/netinfo';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { createNetworkIpIterator, ipToNumber, numberToIp } from '../../../utilities/ip';
-import { run } from 'jest';
-import { MunchkinClient } from '../../../protocol/client';
+import { calculateBroadcast, ipToNumber, numberToIp } from '../../../utilities/ip';
 import { MunchkinDevice } from '../../../protocol/common/message';
 import { DeviceListItem } from '../DeviceListItem';
-import { MunchkinServer } from '../../../protocol/server';
-import net from 'react-native-tcp-socket';
-
+import SjpManager from '../../../sjp/SjpManager';
+import { SjpSocket } from '../../../sjp/SjpSocket';
 
 
 export function JoinRoomScreen() {
 	const theme = useTheme();
 	const netInfo = useNetInfo();
-	const [devices, setDevices] = useState<MunchkinDevice[]>([]);
+	const [devices ] = useState<MunchkinDevice[]>([]);
 
 	const isWifiEnabled = useMemo(() => {
 		if (netInfo.type === 'unknown') {
@@ -34,66 +24,47 @@ export function JoinRoomScreen() {
 	}, [netInfo]);
 
 	useEffect(() => {
-		if (netInfo.type !== 'wifi') {
+		if (netInfo.type !== 'wifi' || !netInfo.isWifiEnabled) {
+			return;
+		}
+		if (!netInfo.details.ipAddress || !netInfo.details.subnet) {
 			return;
 		}
 
-		const { ipAddress, subnet } = netInfo.details;
-		if (!ipAddress || !subnet) {
-			return;
-		}
+		const ipAddress = ipToNumber(netInfo.details.ipAddress);
+		const subnet = ipToNumber(netInfo.details.subnet);
+		const broadcast = numberToIp(calculateBroadcast(ipAddress, subnet));
 
-		let running = true;
-		void new Promise<never>(async () => {
-			const numberIp = ipToNumber(ipAddress);
-			const numberSubnet = ipToNumber(subnet);
-			const promises: Promise<boolean>[] = [];
-			const maxClients = 10;
+		const promiseClients: Promise<SjpSocket>[] = [];
+		const promiseDiscoveryClient = SjpManager.createDiscoveryClient({port: 10304, address: broadcast});
 
-			// while (running) {
-				const ipIterator = createNetworkIpIterator(numberIp, numberSubnet);
-				for (const clientIp of ipIterator) {
-					console.log('Trying connect to', numberToIp(clientIp), running, promises.length);
-					if (!running) {
-						break;
-					}
+		promiseDiscoveryClient.then((discoveryClient) => {
+			console.log('[JOIN] Created discovery server', discoveryClient);
+			discoveryClient.onDiscover((event) => {
+				console.log('[JOIN] Received discover event', event.address);
+				const promiseClient = SjpManager.createSocket(event);
+				promiseClients.push(promiseClient);
 
-					if (promises.length >= maxClients) {
-						const device = await Promise.race(promises);
-						if (device) {
-							console.log('Connected successfully!');
-							// setDevices(d => [...d, device]);
-						} else {
-
-							console.log('Connected failed!');
-						}
-					}
-
-					// const client = new MunchkinClient({timeout: 1000});
-					const socket = new net.Socket();
-
-					const promise: Promise<any> = new Promise((resolve) => {
-
-						socket.connect({host: numberToIp(clientIp), port: 29123, reuseAddress: true}, () => {
-							resolve(true);
-							console.log('SOCKET1: Connected', numberToIp(clientIp))
-						}).on('error', () => {
-							console.log('SOCKET1: Error', numberToIp(clientIp))
-							resolve(false);
-						});
-					})
-						.then((data) => {
-							promises.splice(promises.indexOf(promise), 1);
-							return data;
-						});
-
-					promises.push(promise);
-				}
-			// }
+				console.log('[JOIN] Waiting for socket...', event.address);
+				promiseClient.then((client) => {
+					console.log('[JOIN] Created socket', client);
+					client.onMessage((msg) => {
+						console.log('[JOIN] Test message', msg);
+					});
+					client.onClose(() => {
+						console.log('[JOIN] Closed');
+					});
+					client.onError(() => {
+						console.log('[JOIN] Error');
+					});
+				});
+			});
 		});
 
+
 		return () => {
-			running = false;
+			promiseDiscoveryClient.then(client => client.close());
+			promiseClients.forEach(promiseClient => promiseClient.then(client => client.close()));
 		};
 	}, [netInfo]);
 
@@ -124,5 +95,5 @@ export function JoinRoomScreen() {
 				</>
 			)}
 		</>
-	)
+	);
 }

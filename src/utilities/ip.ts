@@ -17,6 +17,10 @@ export function ipToNumber(ip: string): number {
 		) >>> 0;
 }
 
+export function calculateBroadcast(address: number, subnet: number): number {
+	return (address & subnet) | calculateWildcard(subnet);
+}
+
 export function calculateWildcard(subnet: number): number {
 	return (~subnet & 4294967295) >>> 0;
 }
