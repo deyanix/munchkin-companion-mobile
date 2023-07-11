@@ -1,4 +1,5 @@
 import { NativeModule, NativeModules } from 'react-native';
+
 const {SjpModule} = NativeModules;
 
 export interface DiscoveryServerConstructor {

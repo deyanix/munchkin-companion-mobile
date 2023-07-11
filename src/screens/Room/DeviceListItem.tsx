@@ -1,13 +1,12 @@
 import { List, ListItemProps } from 'react-native-paper';
-import React, { useCallback, useMemo } from 'react';
-import { MunchkinDevice } from '../../protocol/common/message';
+import React, { useCallback } from 'react';
+import { MunchkinDevice } from '../../protocol/munchkin/message';
 
 export interface DeviceListItemProps {
 	device: MunchkinDevice;
 }
 
 export function DeviceListItem(props: DeviceListItemProps): React.JSX.Element {
-
 	const icon = useCallback((p: Partial<ListItemProps>) => {
 		switch (props.device.system) {
 			case 'android': return <List.Icon {...p} icon="android"/>;

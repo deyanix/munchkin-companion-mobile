@@ -2,7 +2,7 @@ import SjpModule, {
 	DiscoveryClientConstructor,
 	DiscoveryServerConstructor,
 	ServerSocketConstructor,
-	SocketConstructor,
+	SocketConstructor
 } from './SjpModule';
 import { SjpDiscoveryServer } from './SjpDiscoveryServer';
 import { SjpDiscoveryClient } from './SjpDiscoveryClient';

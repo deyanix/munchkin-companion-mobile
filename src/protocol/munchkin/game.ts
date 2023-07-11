@@ -1,8 +1,8 @@
-import {MunchkinEmitter} from "./emitter";
+import { EventEmitter } from '../ejp/emitter';
 
 export enum MunchkinGender {
     MALE = 'M',
-    FEMALE = 'F'
+    FEMALE = 'F',
 }
 
 export interface MunchkinPlayer {
@@ -20,9 +20,9 @@ export interface MunchkinGameEventMap {
     updated: () => void;
 }
 
-export class MunchkinGame extends MunchkinEmitter<MunchkinGameEventMap> {
+export class MunchkinGame extends EventEmitter<MunchkinGameEventMap> {
     private _nextPlayerId: number = 1;
-    private _players: MunchkinPlayer[] = []
+    private _players: MunchkinPlayer[] = [];
 
     public createPlayer(playerData: MunchkinPlayerData): void {
         const player: MunchkinPlayer = {id: this._nextPlayerId++, ...playerData};

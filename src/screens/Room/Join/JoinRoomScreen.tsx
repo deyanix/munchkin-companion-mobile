@@ -4,10 +4,9 @@ import { View } from 'react-native';
 import { useNetInfo } from '@react-native-community/netinfo';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { calculateBroadcast, ipToNumber, numberToIp } from '../../../utilities/ip';
-import { MunchkinDevice } from '../../../protocol/common/message';
+import { MunchkinDevice } from '../../../protocol/munchkin/message';
 import { DeviceListItem } from '../DeviceListItem';
-import SjpManager from '../../../sjp/SjpManager';
-import { SjpSocket } from '../../../sjp/SjpSocket';
+import { MunchkinDiscoveryClient } from '../../../protocol/munchkin/discoveryClient';
 
 
 export function JoinRoomScreen() {
@@ -35,36 +34,19 @@ export function JoinRoomScreen() {
 		const subnet = ipToNumber(netInfo.details.subnet);
 		const broadcast = numberToIp(calculateBroadcast(ipAddress, subnet));
 
-		const promiseClients: Promise<SjpSocket>[] = [];
-		const promiseDiscoveryClient = SjpManager.createDiscoveryClient({port: 10304, address: broadcast});
-
-		promiseDiscoveryClient.then((discoveryClient) => {
-			console.log('[JOIN] Created discovery server', discoveryClient);
-			discoveryClient.onDiscover((event) => {
-				console.log('[JOIN] Received discover event', event.address);
-				const promiseClient = SjpManager.createSocket(event);
-				promiseClients.push(promiseClient);
-
-				console.log('[JOIN] Waiting for socket...', event.address);
-				promiseClient.then((client) => {
-					console.log('[JOIN] Created socket', client);
-					client.onMessage((msg) => {
-						console.log('[JOIN] Test message', msg);
-					});
-					client.onClose(() => {
-						console.log('[JOIN] Closed');
-					});
-					client.onError(() => {
-						console.log('[JOIN] Error');
-					});
+		const discoveryClient = MunchkinDiscoveryClient.start(broadcast, 10304);
+		discoveryClient.then(client => {
+			console.log('[JOIN] Created');
+			client.on('connect', (connection) => {
+				console.log('[JOIN] Connected');
+				connection.on('welcome', () => {
+					console.log('[JOIN] Welcomed');
 				});
 			});
 		});
-
-
 		return () => {
-			promiseDiscoveryClient.then(client => client.close());
-			promiseClients.forEach(promiseClient => promiseClient.then(client => client.close()));
+			console.log('[JOIN] Close');
+			discoveryClient.then(client => client.close());
 		};
 	}, [netInfo]);
 

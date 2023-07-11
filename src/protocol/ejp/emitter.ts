@@ -9,14 +9,12 @@ export type EventCallbackParameters<
 
 export type EventReceiver<
     Map = EventMap,
-    Key extends EventKey<Map> = EventKey<Map>,
-    Callback extends Map[Key] = Map[Key]
+    Key extends EventKey<Map> = EventKey<Map>
 > = (...args: EventCallbackParameters<Map, Key>) => void
 
 export type EventEmit<
     Map = EventMap,
-    Key extends EventKey<Map> = EventKey<Map>,
-    Callback extends Map[Key] = Map[Key]
+    Key extends EventKey<Map> = EventKey<Map>
 > = (event: Key, ...args: EventCallbackParameters<Map, Key>) => void
 
 export interface Emitter<Map = EventMap> {
@@ -29,7 +27,7 @@ export type EmitterListeners<Map = EventMap> = {
     [key in EventKey<Map>]?: EventReceiver<Map, key>[]
 }
 
-export class MunchkinEmitter<Map = EventMap> implements Emitter<Map> {
+export class EventEmitter<Map = EventMap> implements Emitter<Map> {
     private listeners: EmitterListeners<Map> = {};
 
     on<K extends EventKey<Map>>(eventName: K, fn: EventReceiver<Map, K>): void {
