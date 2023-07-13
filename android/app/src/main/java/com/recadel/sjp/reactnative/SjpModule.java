@@ -103,6 +103,8 @@ public class SjpModule extends ReactContextBaseJavaModule {
 				SjpSocket socket = new SjpSocket(
 						new Socket(map.getString("address"), map.getInt("port")));
 				socket.applyGarbageCollector(garbageCollector);
+				garbageCollector.start();
+
 				SjpSocketManager manager = new SjpSocketManager(id, this, socket);
 				addManager(manager);
 			} catch (IOException ex) {
@@ -120,6 +122,7 @@ public class SjpModule extends ReactContextBaseJavaModule {
 			ServerSocket socket = new ServerSocket(map.getInt("port"));
 			SjpSocketServerManager manager = new SjpSocketServerManager(id, this, socket, garbageCollector);
 			manager.start();
+			garbageCollector.start();
 
 			addManager(manager);
 			callback.invoke(id);

@@ -3,11 +3,16 @@ import { View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { RootStackParamList } from '../../navigation';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useCallback } from 'react';
 
 type HomeNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Home'>;
 
 export function HomeScreen() {
 	const navigation = useNavigation<HomeNavigationProp>();
+
+	const onCreateRoom = useCallback(() => {
+		navigation.navigate('PlayerList');
+	}, [navigation]);
 
 	return (
 		<>
@@ -15,7 +20,7 @@ export function HomeScreen() {
 				Rozpocznij kolejną ekscytującą sesję w Munchkina!
 			</Text>
 			<View style={{alignItems: 'center', gap: 8}}>
-				<Button mode="contained" onPress={() => navigation.navigate('CreateRoom')}>Utwórz pokój</Button>
+				<Button mode="contained" onPress={onCreateRoom}>Utwórz pokój</Button>
 				<Text>lub</Text>
 				<Button onPress={() => navigation.navigate('JoinRoom')}>Dołącz do istniejącego</Button>
 			</View>

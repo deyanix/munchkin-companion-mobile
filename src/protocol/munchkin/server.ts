@@ -3,6 +3,7 @@ import { MunchkinDevice, WelcomeEvent } from './message';
 import { EjpConnection } from '../ejp/connection';
 import SjpManager from '../sjp/SjpManager';
 import { SjpDiscoveryServer } from '../sjp/SjpDiscoveryServer';
+import { MunchkinGame } from './game';
 
 export class MunchkinServer {
 	public static async start(port: number, device: MunchkinDevice): Promise<MunchkinServer> {
@@ -18,12 +19,18 @@ export class MunchkinServer {
 	private _discoveryServer: SjpDiscoveryServer;
 	private _serverSocket: SjpServerSocket;
 	private _device: MunchkinDevice;
+	private _game: MunchkinGame;
 
 	public constructor(discoveryServer: SjpDiscoveryServer, serverSocket: SjpServerSocket, device: MunchkinDevice) {
 		this._discoveryServer = discoveryServer;
 		this._serverSocket = serverSocket;
 		this._device = device;
+		this._game = new MunchkinGame();
 		this._setup();
+	}
+
+	public get game() {
+		return this._game;
 	}
 
 	public close() {

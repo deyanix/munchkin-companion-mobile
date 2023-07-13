@@ -32,7 +32,6 @@ public class SjpSocket {
 
 	public void close() throws IOException {
 		socket.close();
-		executorService.shutdown();
 		listeners.forEach(SjpSocketListener::onClose);
 	}
 

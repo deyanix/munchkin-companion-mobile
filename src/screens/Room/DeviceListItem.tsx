@@ -8,7 +8,7 @@ export interface DeviceListItemProps {
 
 export function DeviceListItem(props: DeviceListItemProps): React.JSX.Element {
 	const icon = useCallback((p: Partial<ListItemProps>) => {
-		switch (props.device.system) {
+		switch (props.device.system.toLowerCase()) {
 			case 'android': return <List.Icon {...p} icon="android"/>;
 			case 'ios': return <List.Icon {...p} icon="apple-ios"/>;
 			default: return <List.Icon {...p} icon="cellphone"/>;

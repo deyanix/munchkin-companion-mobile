@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { View } from 'react-native';
+import { Alert, BackHandler, View } from 'react-native';
 import { PlayerAvatar } from '../components/PlayerAvatar';
 import {
 	Button,
@@ -14,9 +14,12 @@ import {
 	TouchableRipple
 } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
+import { CloseSessionDialog } from '../components/CloseSessionDialog';
+import { useDialogExecutor } from '../components/DialogExecutor/DialogExecutorContext';
 
 export function PlayerScreen(): React.JSX.Element {
 	const navigation = useNavigation();
+	const dialogExecutor = useDialogExecutor();
 
 	const [text, setText] = React.useState('');
 
@@ -26,15 +29,32 @@ export function PlayerScreen(): React.JSX.Element {
 				<View style={{flexDirection: 'row'}}>
 					<IconButton icon="pencil" onPress={() => {}}/>
 				</View>
-			)
-		})
-	}, [])
+			),
+		});
+	}, [navigation]);
+
+
+	useEffect(() => {
+		const backAction = () => {
+			dialogExecutor.create(CloseSessionDialog)
+				.onOk(() => {
+					console.log('ok!');
+				});
+			return true;
+		};
+
+		const backHandler = BackHandler.addEventListener(
+			'hardwareBackPress',
+			backAction,
+		);
+
+		return () => backHandler.remove();
+	}, []);
 
 
 	return (
 		<>
 		<View style={{margin: 8, gap: 8}}>
-
 		<Card>
 			<Card.Content style={{marginBottom: 16}}>
 				<View style={{display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12}}>

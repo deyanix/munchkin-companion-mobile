@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, List, MD3DarkTheme, Text, useTheme } from 'react-native-paper';
 import { View } from 'react-native';
 import { useNetInfo } from '@react-native-community/netinfo';
@@ -7,54 +7,68 @@ import { calculateBroadcast, ipToNumber, numberToIp } from '../../../utilities/i
 import { MunchkinDevice } from '../../../protocol/munchkin/message';
 import { DeviceListItem } from '../DeviceListItem';
 import { MunchkinDiscoveryClient } from '../../../protocol/munchkin/discoveryClient';
+import { MunchkinClient } from '../../../protocol/munchkin/client';
 
 
 export function JoinRoomScreen() {
 	const theme = useTheme();
 	const netInfo = useNetInfo();
-	const [devices ] = useState<MunchkinDevice[]>([]);
 
-	const isWifiEnabled = useMemo(() => {
-		if (netInfo.type === 'unknown') {
-			return undefined;
+	const [devices, setDevices ] = useState<MunchkinDevice[]>([]);
+
+	const wifiDetails = useMemo(() => {
+		if (netInfo.type === 'wifi' && netInfo.isWifiEnabled) {
+			return netInfo.details;
 		}
-
-		return netInfo.type === 'wifi' && netInfo.isWifiEnabled;
+		return undefined;
 	}, [netInfo]);
 
-	useEffect(() => {
-		if (netInfo.type !== 'wifi' || !netInfo.isWifiEnabled) {
-			return;
-		}
-		if (!netInfo.details.ipAddress || !netInfo.details.subnet) {
+	const broadcastAddress = useMemo(() => {
+		if (!wifiDetails?.ipAddress || !wifiDetails?.subnet) {
 			return;
 		}
 
-		const ipAddress = ipToNumber(netInfo.details.ipAddress);
-		const subnet = ipToNumber(netInfo.details.subnet);
-		const broadcast = numberToIp(calculateBroadcast(ipAddress, subnet));
+		const ipAddress = ipToNumber(wifiDetails.ipAddress);
+		const subnet = ipToNumber(wifiDetails.subnet);
+		return numberToIp(calculateBroadcast(ipAddress, subnet));
+	}, [wifiDetails]);
 
-		const discoveryClient = MunchkinDiscoveryClient.start(broadcast, 10304);
-		discoveryClient.then(client => {
-			console.log('[JOIN] Created');
-			client.on('connect', (connection) => {
-				console.log('[JOIN] Connected');
-				connection.on('welcome', () => {
-					console.log('[JOIN] Welcomed');
-				});
+	const fetchDevices = useCallback((clients: MunchkinClient[]) => {
+		setDevices(clients
+			.map((c) => c.device)
+			.filter((d): d is MunchkinDevice => !!d));
+	}, []);
+
+	const startClient = useCallback(async (address: string) => {
+		const client = await MunchkinDiscoveryClient.start(address, 10304);
+		client.on('connect', (connection) => {
+			connection.on('welcome', () => {
+				fetchDevices(client.connections);
 			});
 		});
+
+		client.on('timeout', () => {
+			fetchDevices(client.connections);
+		});
+		return client;
+	}, [fetchDevices]);
+
+	useEffect(() => {
+		if (!broadcastAddress) {
+			return;
+		}
+
+		const clientPromise = startClient(broadcastAddress);
 		return () => {
-			console.log('[JOIN] Close');
-			discoveryClient.then(client => client.close());
+			clientPromise.then(client => client.close());
 		};
-	}, [netInfo]);
+	}, [broadcastAddress, startClient]);
 
 
 	return (
 		<>
-			{isWifiEnabled === undefined ? <></> :
-				!isWifiEnabled ? (
+			{wifiDetails === undefined ? <></> :
+				!wifiDetails ? (
 				<View style={{alignItems: 'center', margin: 8, marginTop: 16}}>
 					<Icon name="wifi-remove" size={64} color={theme.colors.primary}/>
 					<Text variant="titleMedium" style={{textAlign: 'center', marginTop: 16, marginBottom: 4}}>

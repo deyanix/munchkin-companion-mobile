@@ -50,6 +50,10 @@ export class EjpConnection {
         this._init();
     }
 
+    public get socket(): SjpSocket {
+        return this._socket;
+    }
+
     public async emit<Req>(action: string, data: Req): Promise<void> {
         await this._socket.send({
             type: 'event',
