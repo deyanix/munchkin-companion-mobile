@@ -2,11 +2,11 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { IconButton, Text } from 'react-native-paper';
 import { View } from 'react-native';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
-import { MunchkinGender, MunchkinPlayer, MunchkinPlayerData } from '../protocol/munchkin/game';
-import { PlayerEditor } from './PlayerEditor';
+import { MunchkinGender, MunchkinPlayer, MunchkinPlayerData } from '../../protocol/munchkin/game';
+import { PlayerEditor } from '../../components/Player/PlayerEditor';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { RootStackParamList } from '../navigation';
-import { useSessionContext } from '../components/Session/SessionContext';
+import { RootStackParamList } from '../../navigation';
+import { useSessionContext } from '../../components/Session/SessionContext';
 
 
 type PlayerEditNavigationProp = NativeStackNavigationProp<RootStackParamList, 'PlayerEdit'>;

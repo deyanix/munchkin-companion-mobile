@@ -4,13 +4,13 @@ import { View } from 'react-native';
 import { HomeScreen } from '../screens/Home/HomeScreen';
 import { JoinRoomScreen } from '../screens/Room/Join/JoinRoomScreen';
 import { CreateRoomScreen } from '../screens/Room/Create/CreateRoomScreen';
-import { PlayerListScreen } from '../screens/PlayerListScreen';
-import { PlayerScreen } from '../screens/PlayerScreen';
-import { PlayerEditScreen } from '../screens/PlayerEditScreen';
+import { PlayerListScreen } from '../screens/Player/PlayerListScreen';
+import { PlayerScreen } from '../screens/Player/PlayerScreen';
+import { PlayerEditScreen } from '../screens/Player/PlayerEditScreen';
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import type { RootStackParamList } from './index';
-import { PlayerCreateScreen } from '../screens/PlayerCreateScreen';
+import { PlayerCreateScreen } from '../screens/Player/PlayerCreateScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const AppTheme = {

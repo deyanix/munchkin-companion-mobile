@@ -1,12 +1,12 @@
 import React, { useEffect, useMemo } from 'react';
 import { View } from 'react-native';
-import { PlayerAvatar } from '../components/PlayerAvatar';
+import { PlayerAvatar } from '../../components/Player/PlayerAvatar';
 import { Card, Divider, IconButton, List, MD3DarkTheme, Text } from 'react-native-paper';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { RootStackParamList } from '../navigation';
-import { useSessionContext } from '../components/Session/SessionContext';
-import { PlayerGender } from '../components/PlayerGender';
+import { RootStackParamList } from '../../navigation';
+import { useSessionContext } from '../../components/Session/SessionContext';
+import { PlayerGender } from '../../components/Player/PlayerGender';
 
 type PlayerNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Player'>;
 type PlayerRouteProp = RouteProp<RootStackParamList, 'Player'>;

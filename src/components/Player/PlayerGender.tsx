@@ -1,5 +1,5 @@
 import React from 'react';
-import { MunchkinGender, MunchkinPlayerData } from '../protocol/munchkin/game';
+import { MunchkinGender, MunchkinPlayerData } from '../../protocol/munchkin/game';
 import { List } from 'react-native-paper';
 import { View } from 'react-native';
 

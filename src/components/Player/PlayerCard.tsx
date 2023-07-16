@@ -3,9 +3,9 @@ import { View } from 'react-native';
 import React from 'react';
 import { PlayerAvatar } from './PlayerAvatar';
 import { useNavigation } from '@react-navigation/native';
-import { MunchkinGender, MunchkinPlayer } from '../protocol/munchkin/game';
+import { MunchkinGender, MunchkinPlayer } from '../../protocol/munchkin/game';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { RootStackParamList } from '../navigation';
+import { RootStackParamList } from '../../navigation';
 import { PlayerGender } from './PlayerGender';
 
 type PlayerNavigationProp = NativeStackNavigationProp<RootStackParamList>;
