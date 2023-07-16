@@ -32,8 +32,7 @@ export class EjpConnection {
     public static isConnectionMessage(obj: any): obj is EjpMessage {
         return (
             typeof obj === 'object' && obj !== null &&
-            ['event', 'request', 'response'].includes(obj.type) &&
-            obj.data !== undefined
+            ['event', 'request', 'response'].includes(obj.type)
         );
     }
 
@@ -54,7 +53,7 @@ export class EjpConnection {
         return this._socket;
     }
 
-    public async emit<Req>(action: string, data: Req): Promise<void> {
+    public async emit<Req>(action: string, data?: Req): Promise<void> {
         await this._socket.send({
             type: 'event',
             action,
@@ -62,7 +61,7 @@ export class EjpConnection {
         });
     }
 
-    public async request<Req, Res>(action: string, data: Req): Promise<Res> {
+    public async request<Req, Res>(action: string, data?: Req): Promise<Res> {
         const id = this._nextMessageId++;
         await this._socket.send({
             type: 'request',
@@ -80,7 +79,7 @@ export class EjpConnection {
         });
     }
 
-    public async response<Req>(id: number, data: Req): Promise<void> {
+    public async response<Req>(id: number, data?: Req): Promise<void> {
         await this._socket.send({
             type: 'response',
             id,
@@ -90,16 +89,19 @@ export class EjpConnection {
 
     private _init(): void {
         this._socket.onMessage((msg) => {
-            console.log('[CONNECTION] Received message', msg, EjpConnection.isConnectionMessage(msg));
             if (!EjpConnection.isConnectionMessage(msg)) {
+                console.log('[CONNECTION] Invalid message', msg);
                 return;
             }
 
             if (msg.type === 'event') {
+                console.log('[CONNECTION] Received event', msg);
                 this.events.emit(msg.action, msg.data);
             } else if (msg.type === 'request') {
+                console.log('[CONNECTION] Received request', msg);
                 this.requests.emit(msg.action, msg.data, msg.id);
             } else if (msg.type === 'response') {
+                console.log('[CONNECTION] Received response', msg);
                 const itemIndex = this._receiveQueue
                     .findIndex(i => i.id === msg.id);
                 if (itemIndex < 0) {

@@ -4,6 +4,7 @@ import { MunchkinDevice } from '../../protocol/munchkin/message';
 
 export interface DeviceListItemProps {
 	device: MunchkinDevice;
+	onPress?: () => void;
 }
 
 export function DeviceListItem(props: DeviceListItemProps): React.JSX.Element {
@@ -20,6 +21,6 @@ export function DeviceListItem(props: DeviceListItemProps): React.JSX.Element {
 			title={props.device.name}
 			description={props.device.manufacturer}
 			left={icon}
-			onPress={() => {}} />
+			onPress={props.onPress} />
 	);
 }

@@ -1,26 +1,21 @@
 import { EjpConnection } from '../ejp/connection';
 import { MunchkinDevice, WelcomeEvent } from './message';
 import { EventEmitter } from '../ejp/emitter';
-import { MunchkinGame } from './game';
+import { MunchkinPlayer } from './game';
 
 export interface MunchkinClientEventMap {
 	welcome: () => void;
+	update: (players: MunchkinPlayer[]) => void;
 }
 
 export class MunchkinClient extends EventEmitter<MunchkinClientEventMap> {
 	private readonly _connection: EjpConnection;
 	private _device: MunchkinDevice | undefined;
-	private _game: MunchkinGame;
 
 	public constructor(connection: EjpConnection) {
 		super();
 		this._connection = connection;
-		this._game = new MunchkinGame();
 		this._setup();
-	}
-
-	public get game(): MunchkinGame {
-		return this._game;
 	}
 
 	public get device() {
@@ -29,6 +24,14 @@ export class MunchkinClient extends EventEmitter<MunchkinClientEventMap> {
 
 	public get connection() {
 		return this._connection;
+	}
+
+	public update(players: MunchkinPlayer[]): void {
+		this._connection.emit('update', players);
+	}
+
+	public async synchronize(): Promise<MunchkinPlayer[]> {
+		return this._connection.request('synchronize');
 	}
 
 	public close() {
@@ -42,6 +45,10 @@ export class MunchkinClient extends EventEmitter<MunchkinClientEventMap> {
 			}
 			this._device = event.device;
 			super.emit('welcome');
+		});
+
+		this._connection.events.on('update', (players: MunchkinPlayer[]) => {
+			super.emit('update', players);
 		});
 	}
 }

@@ -3,9 +3,14 @@ import { MunchkinDevice, WelcomeEvent } from './message';
 import { EjpConnection } from '../ejp/connection';
 import SjpManager from '../sjp/SjpManager';
 import { SjpDiscoveryServer } from '../sjp/SjpDiscoveryServer';
-import { MunchkinGame } from './game';
+import { MunchkinPlayer } from './game';
+import { EventEmitter } from '../ejp/emitter';
 
-export class MunchkinServer {
+export interface MunchkinServerEventMap {
+	update: (players: MunchkinPlayer[]) => void;
+}
+
+export class MunchkinServer extends EventEmitter<MunchkinServerEventMap> {
 	public static async start(port: number, device: MunchkinDevice): Promise<MunchkinServer> {
 		const [discoveryServer, serverSocket] = await Promise.all([
 			SjpManager.createDiscoveryServer(({port})),
@@ -16,21 +21,30 @@ export class MunchkinServer {
 	}
 
 	private static readonly VERSION = '1.0';
-	private _discoveryServer: SjpDiscoveryServer;
-	private _serverSocket: SjpServerSocket;
-	private _device: MunchkinDevice;
-	private _game: MunchkinGame;
+	private readonly _device: MunchkinDevice;
+	private readonly _discoveryServer: SjpDiscoveryServer;
+	private readonly _serverSocket: SjpServerSocket;
+	private readonly _connections: EjpConnection[] = [];
+	private _players: MunchkinPlayer[] = [];
 
 	public constructor(discoveryServer: SjpDiscoveryServer, serverSocket: SjpServerSocket, device: MunchkinDevice) {
+		super();
 		this._discoveryServer = discoveryServer;
 		this._serverSocket = serverSocket;
 		this._device = device;
-		this._game = new MunchkinGame();
 		this._setup();
 	}
 
-	public get game() {
-		return this._game;
+	get players(): MunchkinPlayer[] {
+		return this._players;
+	}
+
+	set players(value: MunchkinPlayer[]) {
+		this._players = value;
+	}
+
+	public update(players: MunchkinPlayer[]): void {
+		this._connections.forEach(conn => conn.emit('update', players));
 	}
 
 	public close() {
@@ -41,14 +55,30 @@ export class MunchkinServer {
 	private _setup() {
 		this._serverSocket.onConnect(async (socket) => {
 			const connection = new EjpConnection(socket);
-			await connection.emit<WelcomeEvent>('welcome', {
-				device: this._device,
-				version: MunchkinServer.VERSION,
-			});
+			this._connections.push(connection);
 
 			connection.requests.on('join', (event, id) => {
 				console.log('[SERVER] Join event ', event);
 				connection.response(id, {result: true});
+			});
+
+			connection.requests.on('synchronize', (_, id) => {
+				console.log('[SERVER] Synchronize request');
+				connection.response(id, this._players);
+			});
+
+			connection.events.on('update', (players: MunchkinPlayer[]) => {
+				console.log('[SERVER] Received update event');
+				super.emit('update', players);
+			});
+
+			socket.onClose(() => {
+				this._connections.splice(this._connections.indexOf(connection), 1);
+			});
+
+			await connection.emit<WelcomeEvent>('welcome', {
+				device: this._device,
+				version: MunchkinServer.VERSION,
 			});
 		});
 	}

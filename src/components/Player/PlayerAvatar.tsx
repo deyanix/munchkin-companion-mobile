@@ -19,7 +19,7 @@ export function PlayerAvatar(props: PlayerAvatarProps): React.JSX.Element {
     [props.player]
   );
 
-  const avatarLabel = useMemo(() => [props.player.name, props.player.id].join(' ')
+  const avatarLabel = useMemo(() => props.player.name
     .trim()
     .split(' ')
     .map(n => n.trim())

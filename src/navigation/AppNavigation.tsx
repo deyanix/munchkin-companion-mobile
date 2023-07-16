@@ -3,7 +3,6 @@ import { Appbar } from 'react-native-paper';
 import { View } from 'react-native';
 import { HomeScreen } from '../screens/Home/HomeScreen';
 import { JoinRoomScreen } from '../screens/Room/Join/JoinRoomScreen';
-import { CreateRoomScreen } from '../screens/Room/Create/CreateRoomScreen';
 import { PlayerListScreen } from '../screens/Player/PlayerListScreen';
 import { PlayerScreen } from '../screens/Player/PlayerScreen';
 import { PlayerEditScreen } from '../screens/Player/PlayerEditScreen';
@@ -44,7 +43,6 @@ export function AppNavigation(): React.JSX.Element {
 				}}>
 				<Stack.Screen name="Home" component={HomeScreen} options={{title: 'Munchkin Companion'}}/>
 				<Stack.Screen name="JoinRoom" component={JoinRoomScreen} options={{title: 'Dołącz'}} />
-				<Stack.Screen name="CreateRoom" component={CreateRoomScreen} options={{title: 'Nowy pokój'}} />
 				<Stack.Screen name="PlayerList" component={PlayerListScreen} />
 				<Stack.Screen name="Player" component={PlayerScreen} />
 				<Stack.Screen name="PlayerEdit" component={PlayerEditScreen} />

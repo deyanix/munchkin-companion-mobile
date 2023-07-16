@@ -18,7 +18,7 @@ public class SjpDiscoveryServerManager extends SjpModuleManager {
 	}
 
 	@Override
-	public void close() throws IOException {
+	public void close() {
 		server.close();
 	}
 }

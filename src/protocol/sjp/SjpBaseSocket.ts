@@ -9,19 +9,29 @@ export interface SjpBaseEvent {
 
 export abstract class SjpBaseSocket {
 	private readonly _socketId: number;
+	private _closed: boolean = false;
 
-	public constructor(socketId: number) {
+	protected constructor(socketId: number) {
 		this._socketId = socketId;
+		this.listen('close', () => {
+			this._closed = true;
+		});
 	}
 
 	public get socketId() {
 		return this._socketId;
 	}
 
+	public get closed(): boolean {
+		return this._closed;
+	}
+
 	public close() {
-		console.log('Start closing', this.socketId);
-		SjpModule.close(this.socketId);
-		console.log('End close');
+		console.log('[SOCKET BASE] Try close socket id =', this.socketId, 'close =', this.closed);
+		if (!this._closed) {
+			this._closed = true;
+			SjpModule.close(this.socketId);
+		}
 	}
 
 	protected listen<T extends SjpBaseEvent>(name: string, callback: EventCallback<T>): EmitterSubscription {

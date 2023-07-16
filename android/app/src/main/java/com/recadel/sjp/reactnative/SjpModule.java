@@ -135,7 +135,8 @@ public class SjpModule extends ReactContextBaseJavaModule {
 	public void write(int id, String encodedData) {
 		SjpModuleManager manager = sockets.get(id);
 		if (!(manager instanceof SjpSocketManager)) {
-			throw new SjpException("Socket with given id isn't a TCP socket manager");
+			throw new SjpException(
+					String.format("Socket with given id=%d isn't a TCP socket manager", id));
 		}
 		SjpSocketManager socketManager = (SjpSocketManager) manager;
 		byte[] data = Base64.decode(encodedData, Base64.NO_WRAP);
@@ -144,21 +145,23 @@ public class SjpModule extends ReactContextBaseJavaModule {
 					.getSocket()
 					.send(new SjpMessageBuffer(data).append(SjpMessageBuffer.END_OF_MESSAGE));
 		} catch (IOException ex) {
-			throw new SjpException("Error during sending data via socket", ex);
+			throw new SjpException(
+					String.format("Error during sending data via socket id=%d", id), ex);
 		}
 	}
 
 	@ReactMethod
 	public void close(Integer id) {
 		if (!sockets.containsKey(id)) {
-			throw new SjpException("Socket with given id not exists");
+			throw new SjpException(
+					String.format("Socket with given id=%d not exists", id));
 		}
 
 		try {
 			sockets.get(id).close();
 			sockets.remove(id);
 		} catch (IOException ex) {
-			throw new SjpException("Error during closing socket", ex);
+			throw new SjpException(String.format("Error during closing socket id=%d", id), ex);
 		}
 	}
 

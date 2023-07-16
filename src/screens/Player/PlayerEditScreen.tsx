@@ -1,8 +1,8 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { IconButton, Text } from 'react-native-paper';
 import { View } from 'react-native';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
-import { MunchkinGender, MunchkinPlayer, MunchkinPlayerData } from '../../protocol/munchkin/game';
+import { MunchkinPlayer } from '../../protocol/munchkin/game';
 import { PlayerEditor } from '../../components/Player/PlayerEditor';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../navigation';
@@ -28,11 +28,18 @@ export function PlayerEditScreen(): React.JSX.Element {
 			headerRight: () => (
 				<View style={{flexDirection: 'row'}}>
 					<IconButton icon="delete" onPress={() => {}}/>
-					<IconButton icon="check" onPress={() => {}}/>
+					<IconButton
+						icon="check"
+						onPress={() => {
+							if (player) {
+								updatePlayer(player);
+								navigation.goBack();
+							}
+						}}/>
 				</View>
 			),
 		});
-	}, [navigation]);
+	}, [navigation, player, updatePlayer]);
 
 	if (!player) {
 		return (
@@ -43,7 +50,7 @@ export function PlayerEditScreen(): React.JSX.Element {
 	}
 
 	return (
-		<PlayerEditor player={player} onChange={updatePlayer}/>
+		<PlayerEditor player={player} onChange={setPlayer}/>
 	);
 }
 

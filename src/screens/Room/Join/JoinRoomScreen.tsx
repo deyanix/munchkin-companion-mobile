@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, List, MD3DarkTheme, Text, useTheme } from 'react-native-paper';
 import { View } from 'react-native';
 import { useNetInfo } from '@react-native-community/netinfo';
@@ -7,14 +7,20 @@ import { calculateBroadcast, ipToNumber, numberToIp } from '../../../utilities/i
 import { MunchkinDevice } from '../../../protocol/munchkin/message';
 import { DeviceListItem } from '../DeviceListItem';
 import { MunchkinDiscoveryClient } from '../../../protocol/munchkin/discoveryClient';
-import { MunchkinClient } from '../../../protocol/munchkin/client';
+import { useSessionContext } from '../../../components/Session/SessionContext';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../../../navigation';
 
+type JoinRoomNavigationProp = NativeStackNavigationProp<RootStackParamList, 'JoinRoom'>;
 
 export function JoinRoomScreen() {
 	const theme = useTheme();
 	const netInfo = useNetInfo();
-
+	const navigation = useNavigation<JoinRoomNavigationProp>();
+	const client = useRef<MunchkinDiscoveryClient>();
 	const [devices, setDevices ] = useState<MunchkinDevice[]>([]);
+	const { startClient } = useSessionContext();
 
 	const wifiDetails = useMemo(() => {
 		if (netInfo.type === 'wifi' && netInfo.isWifiEnabled) {
@@ -33,24 +39,29 @@ export function JoinRoomScreen() {
 		return numberToIp(calculateBroadcast(ipAddress, subnet));
 	}, [wifiDetails]);
 
-	const fetchDevices = useCallback((clients: MunchkinClient[]) => {
-		setDevices(clients
+	const fetchDevices = useCallback(() => {
+		if (!client.current) {
+			setDevices([]);
+			return;
+		}
+
+		setDevices(client.current.connections
 			.map((c) => c.device)
 			.filter((d): d is MunchkinDevice => !!d));
 	}, []);
 
-	const startClient = useCallback(async (address: string) => {
-		const client = await MunchkinDiscoveryClient.start(address, 10304);
-		client.on('connect', (connection) => {
+	const startDiscoveryClient = useCallback(async (address: string) => {
+		client.current = await MunchkinDiscoveryClient.start(address, 10304);
+		client.current.on('connect', (connection) => {
 			connection.on('welcome', () => {
-				fetchDevices(client.connections);
+				fetchDevices();
 			});
 		});
 
-		client.on('timeout', () => {
-			fetchDevices(client.connections);
+		client.current.on('timeout', () => {
+			fetchDevices();
 		});
-		return client;
+		return client.current;
 	}, [fetchDevices]);
 
 	useEffect(() => {
@@ -58,12 +69,22 @@ export function JoinRoomScreen() {
 			return;
 		}
 
-		const clientPromise = startClient(broadcastAddress);
+		const clientPromise = startDiscoveryClient(broadcastAddress);
 		return () => {
-			clientPromise.then(client => client.close());
+			clientPromise.then(c => c.close());
+			client.current = undefined;
 		};
-	}, [broadcastAddress, startClient]);
+	}, [broadcastAddress, startDiscoveryClient]);
 
+	const startSession = useCallback(async (device: MunchkinDevice) => {
+		const connection = client.current
+			?.connections
+			.find(con => con.device === device);
+		if (connection) {
+			await startClient(connection);
+			navigation.replace('PlayerList');
+		}
+	}, [startClient, navigation]);
 
 	return (
 		<>
@@ -81,7 +102,7 @@ export function JoinRoomScreen() {
 			) : (
 				<>
 					<List.Section>
-						{devices.map(device => <DeviceListItem key={device.name} device={device}/>)}
+						{devices.map(device => <DeviceListItem key={device.name} device={device} onPress={() => startSession(device)}/>)}
 					</List.Section>
 					<View style={{alignItems: 'center'}}>
 						<ActivityIndicator animating={true} color={MD3DarkTheme.colors.primary} size="large" />

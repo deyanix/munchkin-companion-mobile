@@ -21,10 +21,12 @@ export function PlayerCreateScreen(): React.JSX.Element {
 		navigation.setOptions({
 			headerRight: () => (
 				<View style={{flexDirection: 'row'}}>
-					<IconButton icon="check" onPress={() => {
-						createPlayer(player);
-						navigation.goBack();
-					}}/>
+					<IconButton
+						icon="check"
+						onPress={() => {
+							createPlayer(player);
+							navigation.goBack();
+						}}/>
 				</View>
 			),
 		});
