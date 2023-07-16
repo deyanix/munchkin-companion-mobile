@@ -1,12 +1,14 @@
 import * as React from 'react';
-import { PropsWithChildren, useCallback, useEffect, useState } from 'react';
+import { PropsWithChildren, useCallback, useEffect, useRef, useState } from 'react';
 import { SessionContext, SessionContextType, SessionInstance } from './SessionContext';
 import { MunchkinServer } from '../../protocol/munchkin/server';
 import { getDeviceNameSync, getManufacturerSync, getSystemName } from 'react-native-device-info';
+import { MunchkinPlayer, MunchkinPlayerData } from '../../protocol/munchkin/game';
 
 export const SessionProvider: React.FC<PropsWithChildren> = ({children}) => {
 	const [instance, setInstance] = useState<SessionInstance>();
-
+	const [players, setPlayers] = useState<MunchkinPlayer[]>([]);
+	const nextPlayerId = useRef<number>(1);
 
 	useEffect(() => {
 		return () => {
@@ -32,17 +34,19 @@ export const SessionProvider: React.FC<PropsWithChildren> = ({children}) => {
 		});
 	}, []);
 
+	const createPlayer = useCallback((player: MunchkinPlayerData) => {
+		setPlayers(previous => ([
+			{...player, id: nextPlayerId.current++},
+			...previous,
+		]));
+	}, []);
+
 	const sessionContext: SessionContextType = {
 		instance,
 		startClient,
 		startServer,
-		get game() {
-			return (
-				instance?.type === 'server' ? instance.server.game :
-					instance?.type === 'client' ? instance.client.game :
-						undefined
-			);
-		},
+		players,
+		createPlayer,
 	};
 
 	return (

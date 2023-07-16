@@ -1,7 +1,7 @@
 import { createContext, useContext } from 'react';
 import { MunchkinClient } from '../../protocol/munchkin/client';
 import { MunchkinServer } from '../../protocol/munchkin/server';
-import { MunchkinGame } from '../../protocol/munchkin/game';
+import { MunchkinGame, MunchkinPlayer, MunchkinPlayerData } from '../../protocol/munchkin/game';
 import { MunchkinDiscoveryClient } from '../../protocol/munchkin/discoveryClient';
 
 export type ClientSessionInstance = {
@@ -24,14 +24,16 @@ export type SessionInstance = ClientSessionInstance | ServerSessionInstance | Of
 
 export interface SessionContextType {
 	instance?: SessionInstance;
-	get game(): MunchkinGame | undefined;
+	players: MunchkinPlayer[];
+	createPlayer(player: MunchkinPlayerData): void;
 	startClient(): Promise<void>;
 	startServer(): Promise<void>;
 }
 
 export const SessionContext = createContext<SessionContextType>({
 	instance: undefined,
-	get game() { return undefined; },
+	players: [],
+	createPlayer: () => {},
 	startClient: async () => {},
 	startServer: async () => {},
 });

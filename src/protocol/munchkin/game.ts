@@ -1,8 +1,8 @@
 import { EventEmitter } from '../ejp/emitter';
 
 export enum MunchkinGender {
-    MALE = 'M',
-    FEMALE = 'F',
+    MALE = 'MALE',
+    FEMALE = 'FEMALE',
 }
 
 export interface MunchkinPlayer {
@@ -38,7 +38,7 @@ export class MunchkinGame extends EventEmitter<MunchkinGameEventMap> {
     }
 
     public get players(): MunchkinPlayer[] {
-        return Object.values(this._players);
+        return this._players;
     }
 
     public set players(players: MunchkinPlayer[]) {

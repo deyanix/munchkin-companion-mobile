@@ -1,56 +1,28 @@
 import React, { useEffect } from 'react';
-import { Alert, BackHandler, View } from 'react-native';
+import { View } from 'react-native';
 import { PlayerAvatar } from '../components/PlayerAvatar';
-import {
-	Button,
-	Card,
-	Dialog,
-	Divider,
-	IconButton,
-	List, MD3DarkTheme,
-	Portal,
-	Text,
-	TextInput,
-	TouchableRipple
-} from 'react-native-paper';
+import { Card, Divider, IconButton, List, MD3DarkTheme, Text } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
-import { CloseSessionDialog } from '../components/CloseSessionDialog';
-import { useDialogExecutor } from '../components/DialogExecutor/DialogExecutorContext';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../navigation';
+
+type PlayerNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Player'>;
 
 export function PlayerScreen(): React.JSX.Element {
-	const navigation = useNavigation();
-	const dialogExecutor = useDialogExecutor();
-
-	const [text, setText] = React.useState('');
+	const navigation = useNavigation<PlayerNavigationProp>();
 
 	useEffect(() => {
 		navigation.setOptions({
 			headerRight: () => (
 				<View style={{flexDirection: 'row'}}>
-					<IconButton icon="pencil" onPress={() => {}}/>
+					<IconButton
+						icon="pencil"
+						onPress={() => navigation.navigate('PlayerEdit')}
+					/>
 				</View>
 			),
 		});
 	}, [navigation]);
-
-
-	useEffect(() => {
-		const backAction = () => {
-			dialogExecutor.create(CloseSessionDialog)
-				.onOk(() => {
-					console.log('ok!');
-				});
-			return true;
-		};
-
-		const backHandler = BackHandler.addEventListener(
-			'hardwareBackPress',
-			backAction,
-		);
-
-		return () => backHandler.remove();
-	}, []);
-
 
 	return (
 		<>
@@ -58,7 +30,7 @@ export function PlayerScreen(): React.JSX.Element {
 		<Card>
 			<Card.Content style={{marginBottom: 16}}>
 				<View style={{display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12}}>
-					<PlayerAvatar name="Michał Janiak" size={64}/>
+					{/*<PlayerAvatar name="Michał Janiak" size={64}/>*/}
 						<Text variant="headlineLarge">Michał Janiak</Text>
 						<View style={{flexDirection: 'row', gap: 12}}>
 							<List.Icon icon="swap-horizontal"/>

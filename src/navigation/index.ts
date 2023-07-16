@@ -5,5 +5,6 @@ export type RootStackParamList = {
 	PlayerList: undefined;
 	Player: undefined;
 	PlayerEdit: undefined;
+	PlayerCreate: undefined;
 }
 

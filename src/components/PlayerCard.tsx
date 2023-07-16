@@ -1,54 +1,48 @@
-import { Avatar, Card, IconButton, List, Text } from 'react-native-paper';
+import { Card, List, Text } from 'react-native-paper';
 import { View } from 'react-native';
-import React, { useMemo } from "react";
-import { PlayerAvatar } from "./PlayerAvatar";
+import React from 'react';
+import { PlayerAvatar } from './PlayerAvatar';
 import { useNavigation } from '@react-navigation/native';
+import { MunchkinGender, MunchkinPlayer } from '../protocol/munchkin/game';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../navigation';
 
-export enum PlayerGender {
-  MALE,
-  FEMALE
-}
+type PlayerNavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 export interface PlayerCardProps {
-  name: string;
-  gear: number;
-  level: number;
-  genderChanged?: boolean;
-  gender: PlayerGender;
+  player: MunchkinPlayer;
 }
 
-
-
 export function PlayerCard(props: PlayerCardProps) {
-  const navigation = useNavigation();
+  const navigation = useNavigation<PlayerNavigationProp>();
 
   return (
-    <Card onPress={() => { navigation.navigate({name: 'Player'}) }}>
+    <Card onPress={() => navigation.navigate('Player') }>
       <Card.Title
-        left={(p) => <PlayerAvatar {...p} name={props.name}/>}
+        left={(p) => <PlayerAvatar {...p} player={props.player}/>}
         right={(p) => <View style={{display: 'flex', flexDirection: 'row', gap: 8, marginRight: 12}}>
-          {props.genderChanged ? <List.Icon icon="swap-horizontal"/> : undefined}
-          <List.Icon icon={props.gender === PlayerGender.MALE ? 'gender-male' : 'gender-female'}/>
+          {props.player.genderChanged ? <List.Icon icon="swap-horizontal"/> : undefined}
+          <List.Icon icon={props.player.gender === MunchkinGender.MALE ? 'gender-male' : 'gender-female'}/>
         </View>}
-        title={props.name}/>
+        title={props.player.name}/>
       <Card.Content>
         <View style={{display: 'flex', flexDirection: 'row'}}>
           <View style={{flex: 1, alignItems: 'flex-start'}}>
             <View style={{display: 'flex', flexDirection: 'row', gap: 8}}>
               <List.Icon icon="chevron-double-up" />
-              <Text>{props.level}</Text>
+              <Text>{props.player.level}</Text>
             </View>
           </View>
           <View style={{flex: 1, alignItems: 'center'}}>
             <View style={{display: 'flex', flexDirection: 'row', gap: 8}}>
               <List.Icon icon="sword" />
-              <Text>{props.gear}</Text>
+              <Text>{props.player.gear}</Text>
             </View>
           </View>
           <View style={{flex: 1, alignItems: 'flex-end'}}>
             <View style={{display: 'flex', flexDirection: 'row', gap: 8}}>
               <List.Icon icon="sword-cross" />
-              <Text>{props.level+props.gear}</Text>
+              <Text>{props.player.level+props.player.gear}</Text>
             </View>
           </View>
         </View>

@@ -10,6 +10,7 @@ import { PlayerEditScreen } from '../screens/PlayerEditScreen';
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import type { RootStackParamList } from './index';
+import { PlayerCreateScreen } from '../screens/PlayerCreateScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const AppTheme = {
@@ -47,6 +48,7 @@ export function AppNavigation(): React.JSX.Element {
 				<Stack.Screen name="PlayerList" component={PlayerListScreen} />
 				<Stack.Screen name="Player" component={PlayerScreen} />
 				<Stack.Screen name="PlayerEdit" component={PlayerEditScreen} />
+				<Stack.Screen name="PlayerCreate" component={PlayerCreateScreen} />
 			</Stack.Navigator>
 		</NavigationContainer>
 	)
