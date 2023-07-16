@@ -26,6 +26,7 @@ export interface SessionContextType {
 	instance?: SessionInstance;
 	players: MunchkinPlayer[];
 	createPlayer(player: MunchkinPlayerData): void;
+	updatePlayer(player: MunchkinPlayer): void;
 	startClient(): Promise<void>;
 	startServer(): Promise<void>;
 }
@@ -34,6 +35,7 @@ export const SessionContext = createContext<SessionContextType>({
 	instance: undefined,
 	players: [],
 	createPlayer: () => {},
+	updatePlayer: () => {},
 	startClient: async () => {},
 	startServer: async () => {},
 });

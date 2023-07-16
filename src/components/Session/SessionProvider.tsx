@@ -41,12 +41,20 @@ export const SessionProvider: React.FC<PropsWithChildren> = ({children}) => {
 		]));
 	}, []);
 
+	const updatePlayer = useCallback((player: MunchkinPlayer) => {
+		setPlayers(previous => ([
+			...previous.filter(p => p.id !== player.id),
+			player,
+		]));
+	}, []);
+
 	const sessionContext: SessionContextType = {
 		instance,
 		startClient,
 		startServer,
 		players,
 		createPlayer,
+		updatePlayer,
 	};
 
 	return (

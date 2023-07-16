@@ -3,8 +3,8 @@ export type RootStackParamList = {
 	JoinRoom: undefined;
 	CreateRoom: undefined;
 	PlayerList: undefined;
-	Player: undefined;
-	PlayerEdit: undefined;
+	Player: { id: number };
+	PlayerEdit: { id: number };
 	PlayerCreate: undefined;
 }
 

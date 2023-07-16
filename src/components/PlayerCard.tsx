@@ -6,6 +6,7 @@ import { useNavigation } from '@react-navigation/native';
 import { MunchkinGender, MunchkinPlayer } from '../protocol/munchkin/game';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation';
+import { PlayerGender } from './PlayerGender';
 
 type PlayerNavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -17,13 +18,10 @@ export function PlayerCard(props: PlayerCardProps) {
   const navigation = useNavigation<PlayerNavigationProp>();
 
   return (
-    <Card onPress={() => navigation.navigate('Player') }>
+    <Card onPress={() => navigation.navigate('Player', {id: props.player.id}) }>
       <Card.Title
         left={(p) => <PlayerAvatar {...p} player={props.player}/>}
-        right={(p) => <View style={{display: 'flex', flexDirection: 'row', gap: 8, marginRight: 12}}>
-          {props.player.genderChanged ? <List.Icon icon="swap-horizontal"/> : undefined}
-          <List.Icon icon={props.player.gender === MunchkinGender.MALE ? 'gender-male' : 'gender-female'}/>
-        </View>}
+        right={() => <PlayerGender player={props.player}/>}
         title={props.player.name}/>
       <Card.Content>
         <View style={{display: 'flex', flexDirection: 'row'}}>
