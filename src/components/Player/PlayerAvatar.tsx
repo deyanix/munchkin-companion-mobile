@@ -1,7 +1,7 @@
 /* eslint-disable no-bitwise */
 import React, { useMemo } from 'react';
 import { Avatar, AvatarTextProps } from 'react-native-paper';
-import { MunchkinPlayer } from '../../protocol/munchkin/game';
+import { MunchkinPlayer } from '../../protocol/munchkin/MunchkinModels';
 
 export interface PlayerAvatarProps extends Omit<AvatarTextProps, 'label'> {
   player: MunchkinPlayer;

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { IconButton, Text } from 'react-native-paper';
 import { View } from 'react-native';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
-import { MunchkinPlayer } from '../../protocol/munchkin/game';
+import { MunchkinPlayer } from '../../protocol/munchkin/MunchkinModels';
 import { PlayerEditor } from '../../components/Player/PlayerEditor';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../navigation';

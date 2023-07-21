@@ -1,5 +1,5 @@
 import { SjpDiscoveryClient } from '../sjp/SjpDiscoveryClient';
-import { MunchkinClient } from './client';
+import { MunchkinClient } from './MunchkinClient';
 import { EjpConnection } from '../ejp/connection';
 import SjpManager from '../sjp/SjpManager';
 import { EventEmitter } from '../ejp/emitter';

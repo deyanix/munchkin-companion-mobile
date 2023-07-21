@@ -1,7 +1,7 @@
 import React from 'react';
 import { View } from 'react-native';
 import { Checkbox, Divider, List, RadioButton, TextInput } from 'react-native-paper';
-import { MunchkinGender, MunchkinPlayerData } from '../../protocol/munchkin/game';
+import { MunchkinGender, MunchkinPlayerData } from '../../protocol/munchkin/MunchkinModels';
 
 export interface PlayerEditorProps<T extends MunchkinPlayerData> {
 	player: T;

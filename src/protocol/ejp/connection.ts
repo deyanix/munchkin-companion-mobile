@@ -36,8 +36,8 @@ export class EjpConnection {
         );
     }
 
-    public readonly requests: Emitter<Record<string, (data: any, id: number) => void>>;
-    public readonly events: Emitter<Record<string, (data: any) => void>>;
+    public readonly requests: Emitter<Record<string, (data: any, id: number, connection: EjpConnection) => void>>;
+    public readonly events: Emitter<Record<string, (data: any, connection: EjpConnection) => void>>;
     private readonly _socket: SjpSocket;
     private readonly _receiveQueue: ReceiveQueueItem[] = [];
     private _nextMessageId: number = 1;
@@ -96,10 +96,10 @@ export class EjpConnection {
 
             if (msg.type === 'event') {
                 console.log('[CONNECTION] Received event', msg);
-                this.events.emit(msg.action, msg.data);
+                this.events.emit(msg.action, msg.data, this);
             } else if (msg.type === 'request') {
                 console.log('[CONNECTION] Received request', msg);
-                this.requests.emit(msg.action, msg.data, msg.id);
+                this.requests.emit(msg.action, msg.data, msg.id, this);
             } else if (msg.type === 'response') {
                 console.log('[CONNECTION] Received response', msg);
                 const itemIndex = this._receiveQueue

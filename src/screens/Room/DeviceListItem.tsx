@@ -1,6 +1,6 @@
 import { List, ListItemProps } from 'react-native-paper';
 import React, { useCallback } from 'react';
-import { MunchkinDevice } from '../../protocol/munchkin/message';
+import { MunchkinDevice } from '../../protocol/munchkin/MunchkinModels';
 
 export interface DeviceListItemProps {
 	device: MunchkinDevice;

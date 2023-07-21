@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { IconButton } from 'react-native-paper';
 import { View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { MunchkinGender, MunchkinPlayerData } from '../../protocol/munchkin/game';
+import { MunchkinGender, MunchkinPlayerData } from '../../protocol/munchkin/MunchkinModels';
 import { PlayerEditor } from '../../components/Player/PlayerEditor';
 import { useSessionContext } from '../../components/Session/SessionContext';
 

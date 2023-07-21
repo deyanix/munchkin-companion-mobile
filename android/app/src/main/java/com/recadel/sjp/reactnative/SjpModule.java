@@ -107,12 +107,11 @@ public class SjpModule extends ReactContextBaseJavaModule {
 
 				SjpSocketManager manager = new SjpSocketManager(id, this, socket);
 				addManager(manager);
+				callback.invoke(id);
 			} catch (IOException ex) {
 				throw new SjpException("Error during creating socket client", ex);
 			}
 		});
-
-		callback.invoke(id);
 	}
 
 	@ReactMethod

@@ -6,7 +6,7 @@ import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../navigation';
 import { useSessionContext } from '../../components/Session/SessionContext';
-import { MunchkinGender } from '../../protocol/munchkin/game';
+import { MunchkinGender } from '../../protocol/munchkin/MunchkinModels';
 
 type PlayerNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Player'>;
 type PlayerRouteProp = RouteProp<RootStackParamList, 'Player'>;
