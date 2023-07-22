@@ -24,10 +24,10 @@ export interface SjpInterface extends NativeModule {
 	createDiscoveryServer(data: DiscoveryServerConstructor, cb: (id: number) => void): void;
 	createDiscoveryClient(data: DiscoveryClientConstructor, cb: (id: number) => void): void;
 	createServerSocket(data: ServerSocketConstructor, cb: (id: number) => void): void;
+	createBackgroundServerSocket(data: ServerSocketConstructor): void;
 	createSocket(data: SocketConstructor, cb: (id: number) => void): void;
 	write(id: number, data: string): void;
 	close(id: number): void;
-	download(url: string): void;
 }
 
 export default SjpModule as SjpInterface;

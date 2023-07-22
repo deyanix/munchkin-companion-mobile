@@ -1,5 +1,6 @@
-import { EmitterSubscription, NativeEventEmitter, NativeModules } from 'react-native';
+import { EmitterSubscription } from 'react-native';
 import SjpModule from './SjpModule';
+import { SjpEventEmitter } from './SjpManager';
 
 export type EventCallback<T = SjpBaseEvent> = (data: T) => void;
 
@@ -35,8 +36,7 @@ export abstract class SjpBaseSocket {
 	}
 
 	protected listen<T extends SjpBaseEvent>(name: string, callback: EventCallback<T>): EmitterSubscription {
-		const eventEmitter = new NativeEventEmitter(NativeModules.SjpModule);
-		return eventEmitter.addListener(name, (event: T) => {
+		return SjpEventEmitter.addListener(name, (event: T) => {
 			if (event.socketId === this._socketId) {
 				callback(event);
 			}

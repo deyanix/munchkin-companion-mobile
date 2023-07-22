@@ -1,7 +1,6 @@
 package com.recadel.sjp.reactnative;
 
 import android.util.Base64;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.work.Constraints;
@@ -9,7 +8,6 @@ import androidx.work.Data;
 import androidx.work.NetworkType;
 import androidx.work.OneTimeWorkRequest;
 import androidx.work.WorkManager;
-import androidx.work.WorkRequest;
 
 import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.ReactApplicationContext;
@@ -64,6 +62,10 @@ public class SjpModule extends ReactContextBaseJavaModule {
 
 	public ReactApplicationContext getReactContext() {
 		return reactContext;
+	}
+
+	public SjpReceiverGarbageCollector getGarbageCollector() {
+		return garbageCollector;
 	}
 
 	public int allocateSocketId() {
@@ -130,7 +132,7 @@ public class SjpModule extends ReactContextBaseJavaModule {
 		try {
 			int id = allocateSocketId();
 			ServerSocket socket = new ServerSocket(map.getInt("port"));
-			SjpSocketServerManager manager = new SjpSocketServerManager(id, this, socket, garbageCollector);
+			SjpSocketServerManager manager = new SjpSocketServerManager(id, this, socket);
 			manager.start();
 			garbageCollector.start();
 
@@ -176,14 +178,14 @@ public class SjpModule extends ReactContextBaseJavaModule {
 	}
 
 	@ReactMethod
-	public void download(String url) {
+	public void createBackgroundServerSocket(ReadableMap map) {
 		Constraints constraints = new Constraints.Builder()
 				.setRequiredNetworkType(NetworkType.CONNECTED)
 				.build();
 		Data data = new Data.Builder()
-				.putString(SjpSocketServerWorker.KEY_INPUT_URL, url)
+				.putInt(SjpSocketServerWorker.KEY_SOCKET_ID, allocateSocketId())
+				.putInt(SjpSocketServerWorker.KEY_PORT, map.getInt("port"))
 				.build();
-
 		OneTimeWorkRequest workRequest = new OneTimeWorkRequest.Builder(SjpSocketServerWorker.class)
 				.setInputData(data)
 				.setConstraints(constraints)

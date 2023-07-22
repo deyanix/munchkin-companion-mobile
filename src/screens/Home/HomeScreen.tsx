@@ -23,7 +23,7 @@ export function HomeScreen() {
 	}, [navigation, startServer]);
 
 	const onDownload = useCallback(() => {
-		SjpModule.download('https://ubuntu.task.gda.pl/ubuntu-releases/23.04/ubuntu-23.04-desktop-amd64.iso');
+		SjpModule.createBackgroundServerSocket({port: 10304});
 	}, []);
 
 	return (

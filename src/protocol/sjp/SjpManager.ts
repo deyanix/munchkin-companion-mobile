@@ -8,6 +8,9 @@ import { SjpDiscoveryServer } from './SjpDiscoveryServer';
 import { SjpDiscoveryClient } from './SjpDiscoveryClient';
 import { SjpServerSocket } from './SjpServerSocket';
 import { SjpSocket } from './SjpSocket';
+import { NativeEventEmitter, NativeModules } from 'react-native';
+
+export const SjpEventEmitter = new NativeEventEmitter(NativeModules.SjpModule);
 
 class SjpManager {
 	async createDiscoveryServer(data: DiscoveryServerConstructor): Promise<SjpDiscoveryServer> {
@@ -42,6 +45,16 @@ class SjpManager {
 			SjpModule.createSocket(data, (id) => {
 				console.log('[MANAGER] Socket', data, id);
 				resolve(new SjpSocket(id));
+			});
+		});
+	}
+
+	async createBackgroundServerSocket(data: ServerSocketConstructor): Promise<SjpServerSocket> {
+		return new Promise(resolve => {
+			SjpModule.createBackgroundServerSocket(data);
+			const cancel = SjpEventEmitter.addListener('start', (event) => {
+				resolve(new SjpServerSocket(event.socketId));
+				cancel.remove();
 			});
 		});
 	}

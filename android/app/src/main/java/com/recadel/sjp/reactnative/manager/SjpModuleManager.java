@@ -8,15 +8,22 @@ import com.recadel.sjp.reactnative.SjpModule;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
 
 public abstract class SjpModuleManager implements Closeable {
 	private final int id;
 	private final SjpModule module;
+	private final ScheduledExecutorService executorService;
 
-	public SjpModuleManager(int id, SjpModule module) {
+	public SjpModuleManager(int id, SjpModule module, ScheduledExecutorService executorService) {
 		this.id = id;
 		this.module = module;
+		this.executorService = executorService;
+	}
+
+	public SjpModuleManager(int id, SjpModule module) {
+		this(id, module, null);
 	}
 
 	public int getId() {
@@ -28,6 +35,9 @@ public abstract class SjpModuleManager implements Closeable {
 	}
 
 	public ScheduledExecutorService getExecutorService() {
+		if (executorService != null) {
+			return executorService;
+		}
 		return module.getExecutorService();
 	}
 
@@ -45,6 +55,10 @@ public abstract class SjpModuleManager implements Closeable {
 		getReactContext()
 				.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
 				.emit(name, data);
+	}
+
+	protected void emitEvent(String name) {
+		emitEvent(name, createMap());
 	}
 
 	@Override

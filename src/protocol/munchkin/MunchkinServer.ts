@@ -21,7 +21,7 @@ export class MunchkinServer extends MunchkinConnection<MunchkinServerEventMap> {
 	public static async start(port: number, device: MunchkinDevice): Promise<MunchkinServer> {
 		const [discoveryServer, serverSocket] = await Promise.all([
 			SjpManager.createDiscoveryServer(({port})),
-			SjpManager.createServerSocket({port}),
+			SjpManager.createBackgroundServerSocket({port}),
 		]);
 
 		return new MunchkinServer(discoveryServer, serverSocket, device);
