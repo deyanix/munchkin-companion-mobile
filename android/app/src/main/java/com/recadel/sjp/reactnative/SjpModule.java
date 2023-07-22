@@ -1,14 +1,22 @@
 package com.recadel.sjp.reactnative;
 
 import android.util.Base64;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
+import androidx.work.Constraints;
+import androidx.work.Data;
+import androidx.work.NetworkType;
+import androidx.work.OneTimeWorkRequest;
+import androidx.work.WorkManager;
+import androidx.work.WorkRequest;
 
 import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.ReadableMap;
+import com.facebook.react.module.annotations.ReactModule;
 import com.recadel.sjp.common.SjpMessageBuffer;
 import com.recadel.sjp.common.SjpReceiverGarbageCollector;
 import com.recadel.sjp.discovery.SjpDiscoveryClient;
@@ -19,6 +27,7 @@ import com.recadel.sjp.reactnative.manager.SjpDiscoveryServerManager;
 import com.recadel.sjp.reactnative.manager.SjpSocketManager;
 import com.recadel.sjp.reactnative.manager.SjpModuleManager;
 import com.recadel.sjp.reactnative.manager.SjpSocketServerManager;
+import com.recadel.sjp.reactnative.worker.SjpSocketServerWorker;
 import com.recadel.sjp.socket.SjpSocket;
 
 import java.io.IOException;
@@ -30,7 +39,9 @@ import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
+@ReactModule(name = SjpModule.NAME)
 public class SjpModule extends ReactContextBaseJavaModule {
+	public final static String NAME = "SjpModule";
 	private final ScheduledExecutorService executorService = Executors.newScheduledThreadPool(64);
 	private final Map<Integer, SjpModuleManager> sockets = new HashMap<>();
 	private final ReactApplicationContext reactContext;
@@ -44,7 +55,7 @@ public class SjpModule extends ReactContextBaseJavaModule {
 	@NonNull
 	@Override
 	public String getName() {
-		return "SjpModule";
+		return NAME;
 	}
 
 	public ScheduledExecutorService getExecutorService() {
@@ -162,6 +173,24 @@ public class SjpModule extends ReactContextBaseJavaModule {
 		} catch (IOException ex) {
 			throw new SjpException(String.format("Error during closing socket id=%d", id), ex);
 		}
+	}
+
+	@ReactMethod
+	public void download(String url) {
+		Constraints constraints = new Constraints.Builder()
+				.setRequiredNetworkType(NetworkType.CONNECTED)
+				.build();
+		Data data = new Data.Builder()
+				.putString(SjpSocketServerWorker.KEY_INPUT_URL, url)
+				.build();
+
+		OneTimeWorkRequest workRequest = new OneTimeWorkRequest.Builder(SjpSocketServerWorker.class)
+				.setInputData(data)
+				.setConstraints(constraints)
+				.build();
+		WorkManager
+				.getInstance(getReactContext().getApplicationContext())
+				.enqueue(workRequest);
 	}
 
 	@SuppressWarnings("unused")

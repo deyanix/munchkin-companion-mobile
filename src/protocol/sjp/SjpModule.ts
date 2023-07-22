@@ -27,6 +27,7 @@ export interface SjpInterface extends NativeModule {
 	createSocket(data: SocketConstructor, cb: (id: number) => void): void;
 	write(id: number, data: string): void;
 	close(id: number): void;
+	download(url: string): void;
 }
 
 export default SjpModule as SjpInterface;

@@ -5,6 +5,7 @@ import { RootStackParamList } from '../../navigation';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useCallback } from 'react';
 import { useSessionContext } from '../../components/Session/SessionContext';
+import SjpModule from '../../protocol/sjp/SjpModule';
 
 type HomeNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Home'>;
 
@@ -21,6 +22,10 @@ export function HomeScreen() {
 		navigation.navigate('PlayerList');
 	}, [navigation, startServer]);
 
+	const onDownload = useCallback(() => {
+		SjpModule.download('https://ubuntu.task.gda.pl/ubuntu-releases/23.04/ubuntu-23.04-desktop-amd64.iso');
+	}, []);
+
 	return (
 		<>
 			<Text variant="bodyLarge" style={{marginTop: 16, marginBottom: 48, textAlign: 'center'}}>
@@ -30,6 +35,8 @@ export function HomeScreen() {
 				<Button mode="contained" onPress={onCreateRoom}>Utwórz pokój</Button>
 				<Text>lub</Text>
 				<Button onPress={() => navigation.navigate('JoinRoom')}>Dołącz do istniejącego</Button>
+				<Text>lub</Text>
+				<Button onPress={onDownload}>Testuj notyfikację</Button>
 			</View>
 		</>
 	);
