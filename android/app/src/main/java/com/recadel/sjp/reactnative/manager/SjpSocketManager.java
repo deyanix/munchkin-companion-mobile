@@ -37,8 +37,9 @@ public class SjpSocketManager extends SjpModuleManager implements SjpSocketListe
     }
 
     @Override
-    public void onError() {
+    public void onError(String message) {
         WritableMap map = createMap();
+        map.putString("message", message);
         emitEvent("error", map);
     }
 

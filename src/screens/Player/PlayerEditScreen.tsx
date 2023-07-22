@@ -27,7 +27,6 @@ export function PlayerEditScreen(): React.JSX.Element {
 		navigation.setOptions({
 			headerRight: () => (
 				<View style={{flexDirection: 'row'}}>
-					<IconButton icon="delete" onPress={() => {}}/>
 					<IconButton
 						icon="check"
 						onPress={() => {

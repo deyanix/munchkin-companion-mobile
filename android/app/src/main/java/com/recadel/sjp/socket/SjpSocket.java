@@ -20,6 +20,7 @@ public class SjpSocket {
 	private final SjpReceiver receiver = new SjpReceiver();
 	private final ScheduledExecutorService executorService;
 	private SjpReceiverGarbageCollector garbageCollector;
+	private boolean emittedClose = false;
 
 	public SjpSocket(Socket socket, ScheduledExecutorService executorService) {
 		this.socket = socket;
@@ -32,7 +33,6 @@ public class SjpSocket {
 
 	public void close() throws IOException {
 		socket.close();
-		listeners.forEach(SjpSocketListener::onClose);
 	}
 
 	public void addListener(SjpSocketListener listener) {
@@ -59,8 +59,13 @@ public class SjpSocket {
 		if (!message.isValid()) {
 			throw new SjpException("Cannot send a invalid message");
 		}
-		socket.getOutputStream().write(message.getBuffer());
-		socket.getOutputStream().flush();
+		try {
+			socket.getOutputStream().write(message.getBuffer());
+			socket.getOutputStream().flush();
+		} catch (IOException ex) {
+			handleException(ex);
+			tryClose();
+		}
 	}
 
 	public void setup() {
@@ -73,13 +78,8 @@ public class SjpSocket {
 					receiveData(new SjpMessageBuffer(data).slice(0, length - 1));
 				}
 			} catch (IOException ex) {
-				listeners.forEach(SjpSocketListener::onError);
-				ex.printStackTrace();
-				try {
-					close();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
+				handleException(ex);
+				tryClose();
 			}
 		});
 	}
@@ -88,5 +88,31 @@ public class SjpSocket {
 		receiver.receiveAll(buffer)
 				.forEach(message ->
 						listeners.forEach(listener -> listener.onMessage(message)));
+	}
+
+	private void tryClose() {
+		emitCloseEvent();
+		if (socket.isClosed()) {
+			return;
+		}
+
+		try {
+			close();
+		} catch (IOException ex) {
+			handleException(ex);
+		}
+	}
+
+	private void emitCloseEvent() {
+		if (emittedClose) {
+			return;
+		}
+		emittedClose = true;
+		listeners.forEach(SjpSocketListener::onClose);
+	}
+
+	private void handleException(Exception ex) {
+		listeners.forEach(listener -> listener.onError(ex.getMessage()));
+		ex.printStackTrace();
 	}
 }

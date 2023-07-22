@@ -4,6 +4,7 @@ import {
 	MunchkinPlayer, MunchkinPlayerData, WelcomeEvent,
 } from './MunchkinModels';
 import { MunchkinConnection, MunchkinConnectionEventMap } from './MunchkinConnection';
+import { ScheduledEmitter } from './ScheduledEmitter';
 
 export interface MunchkinClientEventMap extends MunchkinConnectionEventMap {
 	welcome: () => void;
@@ -11,11 +12,15 @@ export interface MunchkinClientEventMap extends MunchkinConnectionEventMap {
 
 export class MunchkinClient extends MunchkinConnection<MunchkinClientEventMap> {
 	private readonly _connection: EjpConnection;
+	private readonly _scheduledEmitter: ScheduledEmitter;
 	private _device: MunchkinDevice | undefined;
 
 	public constructor(connection: EjpConnection) {
 		super();
 		this._connection = connection;
+		this._scheduledEmitter = new ScheduledEmitter(
+			(player) => connection.emit('update', player)
+		);
 		this._setup();
 	}
 
@@ -30,20 +35,21 @@ export class MunchkinClient extends MunchkinConnection<MunchkinClientEventMap> {
 	public async create(player: MunchkinPlayerData): Promise<MunchkinPlayer[]> {
 		console.log('[CLIENT] Create player', player);
 		await this._connection.emit('create', player);
-		return super.create(player);
+		return this.players;
 	}
 
 	public async update(player: MunchkinPlayer): Promise<MunchkinPlayer[]> {
-		console.log('[CLIENT] Update player', player);
-		await super.update(player);
-		await this._connection.emit('update', player);
-		return ;
+		console.log('[CLIENT1] Update player', player);
+		super.locallyUpdate(player);
+		this._scheduledEmitter.schedule(player);
+		return this.players;
 	}
 
 	public async delete(playerId: number): Promise<MunchkinPlayer[]> {
 		console.log('[CLIENT] Delete player', playerId);
+		super.locallyDelete(playerId);
 		await this._connection.emit('delete', playerId);
-		return super.delete(playerId);
+		return this.players;
 	}
 
 	public async synchronize(): Promise<void> {
@@ -63,8 +69,27 @@ export class MunchkinClient extends MunchkinConnection<MunchkinClientEventMap> {
 			super.emit('welcome');
 		});
 
+		this._connection.events.on('create', (player: MunchkinPlayer) => {
+			console.log('[CLIENT] Create event', player);
+			super.locallyCreate(player);
+			super.emit('update', this.players);
+		});
+
+		this._connection.events.on('update', (player: MunchkinPlayer) => {
+			console.log('[CLIENT] Update event', player);
+			super.locallyUpdate(player);
+			super.emit('update', this.players);
+		});
+
+		this._connection.events.on('delete', (playerId: number) => {
+			console.log('[CLIENT] Delete event', playerId);
+			super.locallyDelete(playerId);
+			super.emit('update', this.players);
+		});
+
 		this._connection.events.on('synchronize', (players: MunchkinPlayer[]) => {
 			console.log('[CLIENT] Synchronize', players);
+			this.players = players;
 			super.emit('update', players);
 		});
 	}

@@ -14,7 +14,7 @@ type PlayerRouteProp = RouteProp<RootStackParamList, 'Player'>;
 export const PlayerScreen: React.FC = () => {
 	const navigation = useNavigation<PlayerNavigationProp>();
 	const route = useRoute<PlayerRouteProp>();
-	const { players, updatePlayer } = useSessionContext();
+	const { players, updatePlayer, deletePlayer } = useSessionContext();
 
 	const player = useMemo(
 		() => players.find(p => p.id === route.params.id),
@@ -25,6 +25,14 @@ export const PlayerScreen: React.FC = () => {
 		navigation.setOptions({
 			headerRight: () => (
 				<View style={{flexDirection: 'row'}}>
+					<IconButton
+						icon="delete"
+						onPress={() => {
+	            if (player) {
+		            deletePlayer(player.id);
+		            navigation.goBack();
+	            }
+            }}/>
 					<IconButton
 						icon="pencil"
 						onPress={() => navigation.navigate('PlayerEdit', {id: route.params.id})}

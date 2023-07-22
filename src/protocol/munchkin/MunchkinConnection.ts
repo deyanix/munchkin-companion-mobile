@@ -8,7 +8,6 @@ export interface MunchkinConnectionEventMap {
 
 export abstract class MunchkinConnection<E extends MunchkinConnectionEventMap = MunchkinConnectionEventMap> extends EventEmitter<E>  {
 	private _players: MunchkinPlayer[] = [];
-	private _nextPlayerId: number = 1;
 
 	get players(): MunchkinPlayer[] {
 		return this._players;
@@ -18,31 +17,29 @@ export abstract class MunchkinConnection<E extends MunchkinConnectionEventMap = 
 		this._players = value;
 	}
 
-	public async create(player: MunchkinPlayerData): Promise<MunchkinPlayer[]> {
-		this._players = [
-			...this._players,
-			{
-				...player,
-				id: this._nextPlayerId++,
-			},
+	public abstract create(player: MunchkinPlayerData): Promise<MunchkinPlayer[]>;
+	public abstract update(player: MunchkinPlayer): Promise<MunchkinPlayer[]>;
+	public abstract delete(playerId: number): Promise<MunchkinPlayer[]>;
+	public abstract close(): void;
+
+	protected locallyCreate(player: MunchkinPlayer): void {
+		this.players = [
+			...this.players,
+			player,
 		];
-		return this._players;
 	}
 
-	public async update(player: MunchkinPlayer): Promise<MunchkinPlayer[]> {
+	protected locallyUpdate(player: MunchkinPlayer): void {
 		const index = this._players.findIndex(p => p.id === player.id);
 		if (index < 0) {
-			return this.create(player);
+			this.locallyCreate(player);
+			return;
 		}
 		this._players = [...this._players];
 		this._players[index] = player;
-		return this._players;
 	}
 
-	public async delete(playerId: number): Promise<MunchkinPlayer[]> {
+	protected locallyDelete(playerId: number):void {
 		this._players = this._players.filter(p => p.id !== playerId);
-		return this._players;
 	}
-
-	abstract close(): void;
 }
