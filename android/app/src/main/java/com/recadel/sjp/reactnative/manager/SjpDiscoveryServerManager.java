@@ -1,20 +1,21 @@
 package com.recadel.sjp.reactnative.manager;
 
 import com.recadel.sjp.discovery.SjpDiscoveryServer;
-import com.recadel.sjp.reactnative.SjpModule;
+import com.recadel.sjp.reactnative.SjpRunner;
 
-import java.io.IOException;
+import java.util.concurrent.ScheduledExecutorService;
 
-public class SjpDiscoveryServerManager extends SjpModuleManager {
+public class SjpDiscoveryServerManager extends SjpConnectionManager {
 	private final SjpDiscoveryServer server;
 
-	public SjpDiscoveryServerManager(int id, SjpModule module, SjpDiscoveryServer server) {
-		super(id, module);
+	public SjpDiscoveryServerManager(int id, SjpRunner runner, SjpDiscoveryServer server) {
+		super(id, runner);
 		this.server = server;
 	}
 
-	public void start() {
-		server.start();
+	@Override
+	public void start(ScheduledExecutorService executorService) {
+		server.start(executorService);
 	}
 
 	@Override

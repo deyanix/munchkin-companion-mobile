@@ -19,11 +19,11 @@ export class MunchkinServer extends MunchkinConnection<MunchkinServerEventMap> {
 	private _nextPlayerId: number = 1;
 
 	public static async start(port: number, device: MunchkinDevice): Promise<MunchkinServer> {
+		await SjpManager.startBackgroundService();
 		const [discoveryServer, serverSocket] = await Promise.all([
-			SjpManager.createDiscoveryServer(({port})),
-			SjpManager.createBackgroundServerSocket({port}),
+			SjpManager.createDiscoveryServer(({port, background: true})),
+			SjpManager.createServerSocket({port, background: true}),
 		]);
-
 		return new MunchkinServer(discoveryServer, serverSocket, device);
 	}
 

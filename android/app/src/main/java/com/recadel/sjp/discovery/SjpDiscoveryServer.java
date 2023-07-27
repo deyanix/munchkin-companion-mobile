@@ -10,15 +10,15 @@ import java.net.UnknownHostException;
 import java.util.concurrent.ScheduledExecutorService;
 
 public class SjpDiscoveryServer extends SjpDiscoveryConnection {
-	public SjpDiscoveryServer(ScheduledExecutorService executorService, SocketAddress address) throws SocketException {
-		super(executorService, new DatagramSocket(address));
+	public SjpDiscoveryServer(SocketAddress address) throws SocketException {
+		super(new DatagramSocket(address));
 	}
 
-	public SjpDiscoveryServer(ScheduledExecutorService executorService, int port) throws SocketException, UnknownHostException {
-		super(executorService, new DatagramSocket(port));
+	public SjpDiscoveryServer(int port) throws SocketException, UnknownHostException {
+		super(new DatagramSocket(port));
 	}
 
-	public void start() {
+	public void start(ScheduledExecutorService executorService) {
 		receive((address, message) -> {
 			if (WELCOME_REQUEST_PATTERN.match(message) && message.getId() != null) {
 				try {
@@ -29,6 +29,6 @@ public class SjpDiscoveryServer extends SjpDiscoveryConnection {
 				} catch (IOException | JSONException ignored) {
 				}
 			}
-		});
+		}, executorService);
 	}
 }

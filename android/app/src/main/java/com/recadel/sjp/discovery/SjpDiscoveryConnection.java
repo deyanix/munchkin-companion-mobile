@@ -24,15 +24,13 @@ import java.util.function.BiConsumer;
 public abstract class SjpDiscoveryConnection implements Closeable {
 	protected static final SjpMessagePattern WELCOME_REQUEST_PATTERN = new SjpMessagePattern(SjpMessageType.REQUEST, "welcome", "look-for-trouble");
 	protected static final SjpMessagePattern WELCOME_RESPONSE_PATTERN = new SjpMessagePattern(SjpMessageType.RESPONSE, "welcome", "wandering-monster");
-	protected final ScheduledExecutorService executorService;
 	protected final DatagramSocket socket;
 	private final Map<SocketAddress, SjpReceiver> receivers = new ConcurrentHashMap<>();
 	private int datagramLength = 1024;
 	private long receiverLifetime = 5000L;
 
-	protected SjpDiscoveryConnection(ScheduledExecutorService executorService, DatagramSocket socket) throws SocketException {
+	protected SjpDiscoveryConnection(DatagramSocket socket) throws SocketException {
 		this.socket = socket;
-		this.executorService = executorService;
 	}
 
 	public int getDatagramLength() {
@@ -55,7 +53,7 @@ public abstract class SjpDiscoveryConnection implements Closeable {
 		socket.close();
 	}
 
-	protected void receive(BiConsumer<SocketAddress, SjpMessage> consumer) {
+	protected void receive(BiConsumer<SocketAddress, SjpMessage> consumer, ScheduledExecutorService executorService) {
 		executorService.submit(() -> {
 			byte[] buffer = new byte[datagramLength];
 			DatagramPacket packet = new DatagramPacket(buffer, buffer.length);

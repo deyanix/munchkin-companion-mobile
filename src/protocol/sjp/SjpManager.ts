@@ -49,13 +49,15 @@ class SjpManager {
 		});
 	}
 
-	async createBackgroundServerSocket(data: ServerSocketConstructor): Promise<SjpServerSocket> {
-		return new Promise(resolve => {
-			SjpModule.createBackgroundServerSocket(data);
-			const cancel = SjpEventEmitter.addListener('start', (event) => {
-				resolve(new SjpServerSocket(event.socketId));
-				cancel.remove();
+	startBackgroundService(): Promise<void> {
+		return new Promise((resolve) => {
+			console.log('[MANAGER] Requested background sevice');
+			const listener = SjpEventEmitter.addListener('background-attach', () => {
+				console.log('[MANAGER] Started background service');
+				resolve();
+				listener.remove();
 			});
+			SjpModule.startBackgroundService();
 		});
 	}
 }

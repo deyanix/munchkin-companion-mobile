@@ -10,7 +10,6 @@ import java.io.InputStream;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
 public class SjpSocket {
@@ -18,17 +17,11 @@ public class SjpSocket {
 	private final Socket socket;
 	private final List<SjpSocketListener> listeners = new ArrayList<>();
 	private final SjpReceiver receiver = new SjpReceiver();
-	private final ScheduledExecutorService executorService;
 	private SjpReceiverGarbageCollector garbageCollector;
 	private boolean emittedClose = false;
 
-	public SjpSocket(Socket socket, ScheduledExecutorService executorService) {
-		this.socket = socket;
-		this.executorService = executorService;
-	}
-
 	public SjpSocket(Socket socket) {
-		this(socket, Executors.newScheduledThreadPool(2));
+		this.socket = socket;
 	}
 
 	public void close() throws IOException {
@@ -44,12 +37,12 @@ public class SjpSocket {
 	}
 
 	public void applyGarbageCollector(SjpReceiverGarbageCollector garbageCollector) {
-		stopGarbageCollector();
+		detechGarbageCollector();
 		this.garbageCollector = garbageCollector;
 		garbageCollector.registerReceiver(receiver);
 	}
 
-	public void stopGarbageCollector() {
+	public void detechGarbageCollector() {
 		if (garbageCollector != null) {
 			garbageCollector.unregisterReceiver(receiver);
 		}
@@ -68,7 +61,8 @@ public class SjpSocket {
 		}
 	}
 
-	public void setup() {
+	public void setup(ScheduledExecutorService executorService) {
+		garbageCollector.start();
 		executorService.submit(() -> {
 			try {
 				InputStream input = socket.getInputStream();
