@@ -30,6 +30,7 @@ export interface SjpInterface extends NativeModule {
 	createServerSocket(data: ServerSocketConstructor, cb: (id: number) => void): void;
 	createSocket(data: SocketConstructor, cb: (id: number) => void): void;
 	startBackgroundService(): void;
+	stopBackgroundService(): void;
 	write(id: number, data: string): void;
 	close(id: number): void;
 }

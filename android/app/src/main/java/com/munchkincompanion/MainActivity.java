@@ -64,7 +64,6 @@ public class MainActivity extends ReactActivity {
       // TODO: Change it before release
       final NotificationManager notificationManager =
               (NotificationManager) getApplicationContext().getSystemService(NOTIFICATION_SERVICE);
-      notificationManager.deleteNotificationChannel("munchkin-companion");
 
       CharSequence name = "Download3";
       int importance = NotificationManager.IMPORTANCE_LOW;

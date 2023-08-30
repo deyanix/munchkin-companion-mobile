@@ -30,23 +30,6 @@ public class SjpModule extends ReactContextBaseJavaModule {
 	public final static String NAME = "SjpModule";
 	private final ReactApplicationContext reactContext;
 	private final SjpRunner runner;
-	private SjpForegroundService service;
-	private final ServiceConnection serviceConnection = new ServiceConnection() {
-		@Override
-		public void onServiceConnected(ComponentName className, IBinder binder) {
-			SjpForegroundService.SjpBinder sjpBinder = (SjpForegroundService.SjpBinder) binder;
-			service = sjpBinder.getService();
-			runner.emitEvent("background-attach", null);
-			Log.d("SJP", "Service connected");
-		}
-
-		@Override
-		public void onServiceDisconnected(ComponentName arg0) {
-			service = null;
-			runner.emitEvent("background-detach", null);
-			Log.d("SJP", "Service disconnected");
-		}
-	};
 
 	public SjpModule(ReactApplicationContext reactContext) {
 		this.reactContext = reactContext;
@@ -65,13 +48,6 @@ public class SjpModule extends ReactContextBaseJavaModule {
 
 	public SjpRunner getRunner() {
 		return runner;
-	}
-
-	public SjpRunner getBackgroundRunner() {
-		if (service == null) {
-			return null;
-		}
-		return service.getRunner();
 	}
 
 	public SjpManager getManager() {
@@ -150,12 +126,15 @@ public class SjpModule extends ReactContextBaseJavaModule {
 
 	@ReactMethod
 	public void startBackgroundService() {
-		Intent serviceIntent = new Intent(getApplicationContext(), SjpForegroundService.class)
+		Intent startIntent = new Intent(getApplicationContext(), SjpForegroundService.class)
 				.setAction(SjpForegroundService.ACTION_START_SERVICE);
-		getApplicationContext().bindService(
-				serviceIntent,
-				serviceConnection,
-				Context.BIND_AUTO_CREATE);
+		getApplicationContext().startService(startIntent);
+	}
+
+	@ReactMethod
+	public void stopBackgroundService() {
+		Intent intent = new Intent(getApplicationContext(), SjpForegroundService.class);
+		getApplicationContext().stopService(intent);
 	}
 
 	@SuppressWarnings("unused")
@@ -177,11 +156,11 @@ public class SjpModule extends ReactContextBaseJavaModule {
 		}
 		Log.d("SJP", "Requested runner background = " + background);
 
-		SjpRunner backgroundRunner = getBackgroundRunner();
-		if (background && backgroundRunner != null) {
-			Log.d("SJP", "Use background runner");
-			return backgroundRunner;
-		}
+//		SjpRunner backgroundRunner = getBackgroundRunner();
+//		if (background && backgroundRunner != null) {
+//			Log.d("SJP", "Use background runner");
+//			return backgroundRunner;
+//		}
 		Log.d("SJP", "Use synchronous runner");
 		return runner;
 	}

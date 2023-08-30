@@ -5,6 +5,7 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
 import android.os.Binder;
+import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
 
@@ -12,16 +13,18 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 
+import com.facebook.react.HeadlessJsTaskService;
+import com.facebook.react.bridge.Arguments;
+import com.facebook.react.jstasks.HeadlessJsTaskConfig;
 import com.munchkincompanion.MainApplication;
 import com.munchkincompanion.R;
 import com.recadel.sjp.reactnative.SjpModule;
 import com.recadel.sjp.reactnative.SjpRunner;
 
-public class SjpForegroundService extends Service {
+public class SjpForegroundService extends HeadlessJsTaskService {
     public static final String ACTION_START_SERVICE = "START";
     public static final String ACTION_STOP_SERVICE = "STOP";
     public static final int NOTIFICATION_ID = 10304;
-    private final IBinder binder = new SjpBinder();
     private SjpRunner runner;
 
     @Override
@@ -30,21 +33,26 @@ public class SjpForegroundService extends Service {
         Log.d("SJP", "Created command");
     }
 
-    @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
-        Log.d("SJP", "Start command");
-        if (intent != null) {
-            if (ACTION_STOP_SERVICE.equals(intent.getAction())) {
-                Log.d("SJP", "Stopped service");
-                if (runner != null) {
-                    Log.d("SJP", "Stopped runner");
-                    runner.stop();
-                }
-                stopSelf();
-            }
-        }
-        return START_NOT_STICKY;
-    }
+//    @Override
+//    public int onStartCommand(Intent intent, int flags, int startId) {
+//        Log.d("SJP", "Start command");
+//        if (intent != null) {
+//            if (ACTION_START_SERVICE.equals(intent.getAction())) {
+//                Log.d("SJP", "Started service");
+//
+//                SjpModule module = ((MainApplication) getApplicationContext())
+//                        .getReactNativeHost()
+//                        .getReactInstanceManager()
+//                        .getCurrentReactContext()
+//                        .getNativeModule(SjpModule.class);
+//                runner = new SjpRunner(module.getManager(), getApplicationContext());
+//            } else if (ACTION_STOP_SERVICE.equals(intent.getAction())) {
+//                Log.d("SJP", "Requested stop service");
+//                runner.emitEvent("background-cancel", null);
+//            }
+//        }
+//        return START_NOT_STICKY;
+//    }
 
     @Override
     public void onDestroy() {
@@ -55,30 +63,15 @@ public class SjpForegroundService extends Service {
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
+        super.onBind(intent);
         Log.d("SJP", "Bind service");
-
-        if (ACTION_START_SERVICE.equals(intent.getAction())) {
-            Log.d("SJP", "Started service");
-            startForeground(NOTIFICATION_ID, createNotification());
-
-            SjpModule module = ((MainApplication) getApplicationContext())
-                    .getReactNativeHost()
-                    .getReactInstanceManager()
-                    .getCurrentReactContext()
-                    .getNativeModule(SjpModule.class);
-            runner = new SjpRunner(module.getManager(), getApplicationContext());
-        }
-        return binder;
+        return null;
     }
 
     @Override
     public boolean onUnbind(Intent intent) {
         Log.d("SJP", "Unbind service");
         return super.onUnbind(intent);
-    }
-
-    public SjpRunner getRunner() {
-        return runner;
     }
 
     @NonNull
@@ -100,9 +93,17 @@ public class SjpForegroundService extends Service {
                 .build();
     }
 
-    public class SjpBinder extends Binder {
-        public SjpForegroundService getService() {
-            return SjpForegroundService.this;
+    public HeadlessJsTaskConfig getTaskConfig(Intent intent) {
+        Bundle extras = intent.getExtras();
+        if (extras != null) {
+            startForeground(NOTIFICATION_ID, createNotification());
+            return new HeadlessJsTaskConfig(
+                    "SomeTaskName",
+                    Arguments.fromBundle(extras),
+                    0L,
+                    true
+            );
         }
+        return null;
     }
 }

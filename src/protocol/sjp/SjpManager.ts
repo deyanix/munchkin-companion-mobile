@@ -58,6 +58,11 @@ class SjpManager {
 				listener.remove();
 			});
 			SjpModule.startBackgroundService();
+			const listener2 = SjpEventEmitter.addListener('background-cancel', () => {
+				console.log('[MANAGER] Stopping background service');
+				SjpModule.stopBackgroundService();
+				listener2.remove();
+			});
 		});
 	}
 }
