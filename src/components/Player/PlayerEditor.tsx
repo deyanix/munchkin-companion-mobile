@@ -1,7 +1,7 @@
 import React from 'react';
 import { View } from 'react-native';
 import { Checkbox, Divider, List, RadioButton, TextInput } from 'react-native-paper';
-import { MunchkinGender, MunchkinPlayerData } from '../../protocol/munchkin/MunchkinModels';
+import { MunchkinGender, MunchkinPlayerData } from '../../modules/GameModule/GameModule';
 
 export interface PlayerEditorProps<T extends MunchkinPlayerData> {
 	player: T;
@@ -48,8 +48,8 @@ export function PlayerEditor<T extends MunchkinPlayerData>(props: PlayerEditorPr
 					value={props.player?.gender?.toString() ?? ''}
 					onValueChange={(val) => onChangeGender(val as MunchkinGender)}
 				>
-					<RadioButton.Item label="Mężczyzna" value={MunchkinGender.MALE.toString()} />
-					<RadioButton.Item label="Kobieta" value={MunchkinGender.FEMALE.toString()} />
+					<RadioButton.Item label="Mężczyzna" value={'MALE'} />
+					<RadioButton.Item label="Kobieta" value={'FEMALE'} />
 				</RadioButton.Group>
 				<Checkbox.Item
 					status={props.player?.genderChanged ? 'checked' : 'unchecked'}

@@ -6,7 +6,6 @@ import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../navigation';
 import { useSessionContext } from '../../components/Session/SessionContext';
-import { MunchkinGender } from '../../protocol/munchkin/MunchkinModels';
 
 type PlayerNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Player'>;
 type PlayerRouteProp = RouteProp<RootStackParamList, 'Player'>;
@@ -40,7 +39,7 @@ export const PlayerScreen: React.FC = () => {
 				</View>
 			),
 		});
-	}, [navigation, route]);
+	}, [deletePlayer, navigation, player, route]);
 
 	const onUpdateGear = useCallback((add: number) => {
 		if (player) {
@@ -64,7 +63,7 @@ export const PlayerScreen: React.FC = () => {
 		if (player) {
 			updatePlayer({
 				...player,
-				gender: player.gender === MunchkinGender.MALE ? MunchkinGender.FEMALE : MunchkinGender.MALE,
+				gender: player.gender === 'MALE' ? 'FEMALE' : 'MALE',
 				genderChanged: true,
 			});
 		}
@@ -97,7 +96,7 @@ export const PlayerScreen: React.FC = () => {
 						<View style={{display: 'flex', flexDirection: 'row'}}>
 							{player.genderChanged && <IconButton icon="swap-horizontal" onPress={onUndoGenderChange}/>}
 							<IconButton
-								icon={player.gender === MunchkinGender.MALE ? 'gender-male' : 'gender-female'}
+								icon={player.gender === 'MALE' ? 'gender-male' : 'gender-female'}
 								onPress={onToggleGender}/>
 						</View>
 					</View>

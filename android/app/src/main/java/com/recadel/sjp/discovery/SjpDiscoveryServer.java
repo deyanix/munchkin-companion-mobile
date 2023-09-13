@@ -6,15 +6,15 @@ import java.io.IOException;
 import java.net.DatagramSocket;
 import java.net.SocketAddress;
 import java.net.SocketException;
-import java.net.UnknownHostException;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 public class SjpDiscoveryServer extends SjpDiscoveryConnection {
 	public SjpDiscoveryServer(SocketAddress address) throws SocketException {
 		super(new DatagramSocket(address));
 	}
 
-	public SjpDiscoveryServer(int port) throws SocketException, UnknownHostException {
+	public SjpDiscoveryServer(int port) throws SocketException {
 		super(new DatagramSocket(port));
 	}
 

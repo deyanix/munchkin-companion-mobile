@@ -1,30 +1,21 @@
 import { Button, Text } from 'react-native-paper';
 import { View } from 'react-native';
-import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import { RootStackParamList } from '../../navigation';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import GameModule from '../../modules/GameModule/GameModule';
 import { useCallback } from 'react';
-import { useSessionContext } from '../../components/Session/SessionContext';
-import SjpModule from '../../protocol/sjp/SjpModule';
 
 type HomeNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Home'>;
 
 export function HomeScreen() {
 	const navigation = useNavigation<HomeNavigationProp>();
-	const {startServer, close} = useSessionContext();
-
-	useFocusEffect(useCallback(() => {
-		close();
-	}, [close]));
 
 	const onCreateRoom = useCallback(() => {
-		startServer();
+		GameModule.startHostGame({port: 10304});
 		navigation.navigate('PlayerList');
-	}, [navigation, startServer]);
-
-	const onDownload = useCallback(() => {
-		SjpModule.createBackgroundServerSocket({port: 10304});
-	}, []);
+		return () => GameModule.closeHostGame();
+	}, [navigation]);
 
 	return (
 		<>
@@ -35,8 +26,6 @@ export function HomeScreen() {
 				<Button mode="contained" onPress={onCreateRoom}>Utwórz pokój</Button>
 				<Text>lub</Text>
 				<Button onPress={() => navigation.navigate('JoinRoom')}>Dołącz do istniejącego</Button>
-				<Text>lub</Text>
-				<Button onPress={onDownload}>Testuj notyfikację</Button>
 			</View>
 		</>
 	);

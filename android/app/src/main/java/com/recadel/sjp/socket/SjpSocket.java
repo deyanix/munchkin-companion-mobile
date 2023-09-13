@@ -5,6 +5,7 @@ import com.recadel.sjp.common.SjpReceiver;
 import com.recadel.sjp.common.SjpReceiverGarbageCollector;
 import com.recadel.sjp.exception.SjpException;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.Socket;
@@ -12,7 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
 
-public class SjpSocket {
+public class SjpSocket implements Closeable {
 	private static final int BUFFER_SIZE = 1024;
 	private final Socket socket;
 	private final List<SjpSocketListener> listeners = new ArrayList<>();
@@ -37,12 +38,12 @@ public class SjpSocket {
 	}
 
 	public void applyGarbageCollector(SjpReceiverGarbageCollector garbageCollector) {
-		detechGarbageCollector();
+		detachGarbageCollector();
 		this.garbageCollector = garbageCollector;
 		garbageCollector.registerReceiver(receiver);
 	}
 
-	public void detechGarbageCollector() {
+	public void detachGarbageCollector() {
 		if (garbageCollector != null) {
 			garbageCollector.unregisterReceiver(receiver);
 		}
@@ -62,7 +63,9 @@ public class SjpSocket {
 	}
 
 	public void setup(ScheduledExecutorService executorService) {
-		garbageCollector.start();
+		if (garbageCollector != null) {
+			garbageCollector.start();
+		}
 		executorService.submit(() -> {
 			try {
 				InputStream input = socket.getInputStream();
@@ -106,7 +109,6 @@ public class SjpSocket {
 	}
 
 	private void handleException(Exception ex) {
-		listeners.forEach(listener -> listener.onError(ex.getMessage()));
-		ex.printStackTrace();
+		listeners.forEach(listener -> listener.onError(ex));
 	}
 }

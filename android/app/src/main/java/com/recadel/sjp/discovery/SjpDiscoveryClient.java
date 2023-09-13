@@ -10,6 +10,7 @@ import java.net.SocketException;
 import java.util.Queue;
 import java.util.Random;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -26,7 +27,8 @@ public class SjpDiscoveryClient extends SjpDiscoveryConnection {
 		this.broadcastAddress = broadcastAddress;
 	}
 
-	public void discover(Consumer<InetSocketAddress> consumer, ScheduledExecutorService executorService) {
+	public void discover(Consumer<InetSocketAddress> consumer) {
+		final ScheduledExecutorService executorService = Executors.newScheduledThreadPool(2);
 		final int localIdentifiersPool = identifiersPool;
 		Random random = new Random();
 		Queue<Long> requestIds = new ConcurrentLinkedQueue<>();

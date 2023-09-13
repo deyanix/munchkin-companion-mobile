@@ -2,16 +2,16 @@ import React, { useEffect, useState } from 'react';
 import { IconButton } from 'react-native-paper';
 import { View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { MunchkinGender, MunchkinPlayerData } from '../../protocol/munchkin/MunchkinModels';
 import { PlayerEditor } from '../../components/Player/PlayerEditor';
 import { useSessionContext } from '../../components/Session/SessionContext';
+import { MunchkinPlayerData } from '../../modules/GameModule/GameModule';
 
 export function PlayerCreateScreen(): React.JSX.Element {
 	const {createPlayer} = useSessionContext();
 	const navigation = useNavigation();
 	const [player, setPlayer] = useState<MunchkinPlayerData>({
 		name: '',
-		gender:MunchkinGender.MALE,
+		gender: 'MALE',
 		genderChanged: false,
 		gear: 0,
 		level: 1,

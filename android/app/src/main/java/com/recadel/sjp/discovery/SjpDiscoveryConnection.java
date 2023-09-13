@@ -5,14 +5,12 @@ import com.recadel.sjp.common.SjpMessageBuffer;
 import com.recadel.sjp.common.SjpMessagePattern;
 import com.recadel.sjp.common.SjpMessageType;
 import com.recadel.sjp.common.SjpReceiver;
-
 import org.json.JSONException;
 
 import java.io.Closeable;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketAddress;
-import java.net.SocketException;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Map;
@@ -29,7 +27,7 @@ public abstract class SjpDiscoveryConnection implements Closeable {
 	private int datagramLength = 1024;
 	private long receiverLifetime = 5000L;
 
-	protected SjpDiscoveryConnection(DatagramSocket socket) throws SocketException {
+	protected SjpDiscoveryConnection(DatagramSocket socket) {
 		this.socket = socket;
 	}
 
@@ -61,8 +59,7 @@ public abstract class SjpDiscoveryConnection implements Closeable {
 				try {
 					socket.receive(packet);
 					handlePacket(packet, consumer);
-				} catch (Exception e) {
-					e.printStackTrace();
+				} catch (Exception ignored) {
 				}
 			}
 		});

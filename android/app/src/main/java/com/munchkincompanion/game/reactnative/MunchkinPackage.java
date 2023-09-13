@@ -1,4 +1,4 @@
-package com.recadel.sjp.reactnative;
+package com.munchkincompanion.game.reactnative;
 
 import androidx.annotation.NonNull;
 
@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class SjpPackage implements ReactPackage {
+public class MunchkinPackage implements ReactPackage {
     @NonNull
     @Override
     public List<ViewManager> createViewManagers(@NonNull ReactApplicationContext reactContext) {
@@ -22,9 +22,8 @@ public class SjpPackage implements ReactPackage {
     @Override
     public List<NativeModule> createNativeModules(@NonNull ReactApplicationContext reactContext) {
         List<NativeModule> modules = new ArrayList<>();
-
-        modules.add(new SjpModule(reactContext));
-
+        modules.add(new GameModule(reactContext));
         return modules;
     }
 }
+

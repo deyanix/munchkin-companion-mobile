@@ -3,10 +3,10 @@ import { View } from 'react-native';
 import React from 'react';
 import { PlayerAvatar } from './PlayerAvatar';
 import { useNavigation } from '@react-navigation/native';
-import { MunchkinPlayer } from '../../protocol/munchkin/MunchkinModels';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../navigation';
 import { PlayerGender } from './PlayerGender';
+import { MunchkinPlayer } from '../../modules/GameModule/GameModule';
 
 type PlayerNavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
