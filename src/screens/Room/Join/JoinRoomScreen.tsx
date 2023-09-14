@@ -1,17 +1,19 @@
-import React, {  useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, List, MD3DarkTheme, Text, useTheme } from 'react-native-paper';
 import { View } from 'react-native';
 import { useNetInfo } from '@react-native-community/netinfo';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { calculateBroadcast, ipToNumber, numberToIp } from '../../../utilities/ip';
-import GameModule from '../../../modules/GameModule/GameModule';
-import GameEventEmitter from '../../../modules/GameModule/GameEventEmitter';
+import GameModule, { MunchkinDevice } from '../../../modules/GameModule/GameModule';
+import GameEventEmitter, { GameDiscoveryItem } from '../../../modules/GameModule/GameEventEmitter';
+import { DeviceListItem } from '../DeviceListItem';
 
 // type JoinRoomNavigationProp = NativeStackNavigationProp<RootStackParamList, 'JoinRoom'>;
 
 export function JoinRoomScreen() {
 	const theme = useTheme();
 	const netInfo = useNetInfo();
+	const [devices, setDevices] = useState<GameDiscoveryItem[]>([]);
 	// const navigation = useNavigation<JoinRoomNavigationProp>();
 
 	const wifiDetails = useMemo(() => {
@@ -32,10 +34,13 @@ export function JoinRoomScreen() {
 	}, [wifiDetails]);
 
 	useEffect(() => {
-		const listener = GameEventEmitter.onDiscovery((device) => {
-			console.log('FOUND!', device);
+		const listener = GameEventEmitter.onDiscovery((event) => {
+			setDevices(event);
+			console.log(event);
 		});
-		return () => listener.remove();
+		return () => {
+			listener.remove();
+		};
 	}, []);
 
 	useEffect(() => {
@@ -62,10 +67,9 @@ export function JoinRoomScreen() {
 			) : (
 				<>
 					<List.Section>
-						{/*{devices.map(device => <DeviceListItem key={device.name} device={device} onPress={() => startSession(device)}/>)}*/}
+						{devices.map(device => <DeviceListItem key={device.address + device.port} discoveryItem={device} onPress={() => {}}/>)}
 					</List.Section>
 					<View style={{alignItems: 'center'}}>
-						<Text>{broadcastAddress}</Text>
 						<ActivityIndicator animating={true} color={MD3DarkTheme.colors.primary} size="large" />
 						<Text variant="titleMedium" style={{marginTop: 12, marginBottom: 4}}>Wyszukiwanie pokoju...</Text>
 						<Text variant="bodyMedium" style={{textAlign: 'center'}}>Pamiętaj, żeby być w tej samej sieci WiFi, co Twój znajomy udostępniający pokój</Text>

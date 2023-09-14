@@ -1,26 +1,20 @@
 import { List, ListItemProps } from 'react-native-paper';
 import React, { useCallback } from 'react';
 import { MunchkinDevice } from '../../protocol/munchkin/MunchkinModels';
+import { GameDiscoveryItem } from '../../modules/GameModule/GameEventEmitter';
 
 export interface DeviceListItemProps {
-	device: MunchkinDevice;
+	discoveryItem: GameDiscoveryItem;
 	onPress?: () => void;
 }
 
 export function DeviceListItem(props: DeviceListItemProps): React.JSX.Element {
-	const icon = useCallback((p: Partial<ListItemProps>) => {
-		switch (props.device.system.toLowerCase()) {
-			case 'android': return <List.Icon {...p} icon="android"/>;
-			case 'ios': return <List.Icon {...p} icon="apple-ios"/>;
-			default: return <List.Icon {...p} icon="cellphone"/>;
-		}
-	}, [props.device.system]);
 
 	return (
 		<List.Item
-			title={props.device.name}
-			description={props.device.manufacturer}
-			left={icon}
+			title={props.discoveryItem.device.manufacturer}
+			description={props.discoveryItem.device.model}
+			left={(p) => <List.Icon {...p} icon="cellphone"/>}
 			onPress={props.onPress} />
 	);
 }

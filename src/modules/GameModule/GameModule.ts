@@ -30,6 +30,11 @@ export interface MunchkinPlayer extends MunchkinPlayerData {
 	id: number;
 }
 
+export interface MunchkinDevice {
+	manufacturer: string;
+	model: string;
+}
+
 export interface GameModuleInterface extends NativeModule {
 	startDiscovery(data: DiscoveryClientConstructor): void;
 	closeDiscovery(): void;
