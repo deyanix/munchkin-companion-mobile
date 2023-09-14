@@ -1,5 +1,8 @@
 package com.munchkincompanion.game.entity;
 
+import com.facebook.react.bridge.Arguments;
+import com.facebook.react.bridge.ReadableMap;
+import com.facebook.react.bridge.WritableMap;
 import com.munchkincompanion.game.exception.GameException;
 
 import org.json.JSONException;
@@ -18,6 +21,16 @@ public class PlayerData {
         } catch (JSONException ex) {
             throw new GameException(ex);
         }
+    }
+
+    public static PlayerData fromMap(ReadableMap map) {
+        PlayerData data = new PlayerData();
+        data.setName(map.getString("name"));
+        data.setLevel(map.getInt("level"));
+        data.setGear(map.getInt("gear"));
+        data.setGender(PlayerGender.valueOf(map.getString("gender")));
+        data.setGenderChanged(map.getBoolean("genderChanged"));
+        return data;
     }
 
     private String name;
@@ -78,5 +91,15 @@ public class PlayerData {
         } catch (JSONException ex) {
             throw new GameException(ex);
         }
+    }
+
+    public WritableMap toMap() {
+        WritableMap map = Arguments.createMap();
+        map.putString("name", name);
+        map.putInt("level", level);
+        map.putInt("gear", gear);
+        map.putString("gender", gender.toString());
+        map.putBoolean("genderChanged", genderChanged);
+        return map;
     }
 }

@@ -41,6 +41,9 @@ export interface GameModuleInterface extends NativeModule {
 	startHostGame(data: HostGameConstructor): void;
 	closeHostGame(): void;
 	startGuestGame(data: GuestGameConstructor): void;
+	createPlayer(player: MunchkinPlayerData): void;
+	updatePlayer(player: MunchkinPlayer): void;
+	deletePlayer(playerId: number): void;
 	getPlayers(cb: () => MunchkinPlayer[]): void;
 }
 

@@ -2,9 +2,14 @@ package com.munchkincompanion.game.controller;
 
 import com.munchkincompanion.game.entity.Player;
 import com.munchkincompanion.game.entity.PlayerData;
+import com.munchkincompanion.game.reactnative.ReactEventEmitter;
 
 public class LocalGameController extends GameController {
     private int nextPlayerId = 1;
+
+    public LocalGameController(ReactEventEmitter eventEmitter) {
+        super(eventEmitter);
+    }
 
     @Override
     public void createPlayer(PlayerData data) {

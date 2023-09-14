@@ -54,7 +54,7 @@ export const PlayerScreen: React.FC = () => {
 		if (player) {
 			updatePlayer({
 				...player,
-				'level': Math.max(Math.min(player.level + add, 10), 1),
+				'level': Math.max(Math.min(player.level + add, 20), 1),
 			});
 		}
 	}, [player, updatePlayer]);

@@ -48,7 +48,8 @@ public class GameFinder implements Closeable {
     public void start() {
         discoveryClient.discover(this::accept);
 
-        final long deviceLifetime = discoveryClient.getInterval() * 2;
+        final long interval = discoveryClient.getInterval();
+        final long deviceLifetime = interval * 2;
         Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(() -> {
             Iterator<Map.Entry<InetSocketAddress, GameFinderItem>> iterator = sockets.entrySet().iterator();
             while (iterator.hasNext()) {
@@ -61,7 +62,7 @@ public class GameFinder implements Closeable {
                 }
             }
             emit();
-        }, 0, deviceLifetime, TimeUnit.MILLISECONDS);
+        }, 0, interval, TimeUnit.MILLISECONDS);
     }
 
     @Override

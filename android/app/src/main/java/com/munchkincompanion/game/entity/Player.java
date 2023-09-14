@@ -1,5 +1,7 @@
 package com.munchkincompanion.game.entity;
 
+import com.facebook.react.bridge.ReadableMap;
+import com.facebook.react.bridge.WritableMap;
 import com.munchkincompanion.game.exception.GameException;
 
 import org.json.JSONException;
@@ -13,6 +15,11 @@ public class Player extends PlayerData {
         } catch (JSONException e) {
             throw new GameException("Error deserializing player");
         }
+    }
+
+    public static Player fromMap(ReadableMap map) {
+        PlayerData data = PlayerData.fromMap(map);
+        return new Player(map.getInt("id"), data);
     }
 
     private final int id;
@@ -46,6 +53,12 @@ public class Player extends PlayerData {
         } catch (JSONException e) {
             throw new GameException("Error serializing player", e);
         }
+    }
+
+    public WritableMap toMap() {
+        WritableMap map = super.toMap();
+        map.putInt("id", id);
+        return map;
     }
 
     @Override

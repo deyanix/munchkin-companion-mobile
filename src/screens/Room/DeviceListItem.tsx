@@ -1,6 +1,5 @@
-import { List, ListItemProps } from 'react-native-paper';
-import React, { useCallback } from 'react';
-import { MunchkinDevice } from '../../protocol/munchkin/MunchkinModels';
+import { List } from 'react-native-paper';
+import React from 'react';
 import { GameDiscoveryItem } from '../../modules/GameModule/GameEventEmitter';
 
 export interface DeviceListItemProps {
@@ -14,7 +13,7 @@ export function DeviceListItem(props: DeviceListItemProps): React.JSX.Element {
 		<List.Item
 			title={props.discoveryItem.device.manufacturer}
 			description={props.discoveryItem.device.model}
-			left={(p) => <List.Icon {...p} icon="cellphone"/>}
+			left={p => <List.Icon {...p} icon="cellphone"/>}
 			onPress={props.onPress} />
 	);
 }

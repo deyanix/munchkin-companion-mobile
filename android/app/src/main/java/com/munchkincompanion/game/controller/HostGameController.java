@@ -4,6 +4,7 @@ import com.munchkincompanion.game.entity.Device;
 import com.munchkincompanion.game.entity.Player;
 import com.munchkincompanion.game.entity.PlayerData;
 import com.munchkincompanion.game.exception.GameException;
+import com.munchkincompanion.game.reactnative.ReactEventEmitter;
 import com.recadel.sjp.discovery.SjpDiscoveryServer;
 import com.recadel.sjp.messenger.SjpMessenger;
 import com.recadel.sjp.messenger.SjpMessengerReceiver;
@@ -19,7 +20,8 @@ public class HostGameController extends LocalGameController {
     private final SjpDiscoveryServer discoveryServer;
     private final SjpServerMediator mediator;
 
-    public HostGameController(SjpDiscoveryServer discoveryServer, SjpServerMediator mediator) {
+    public HostGameController(ReactEventEmitter eventEmitter, SjpDiscoveryServer discoveryServer, SjpServerMediator mediator) {
+        super(eventEmitter);
         this.discoveryServer = discoveryServer;
         this.mediator = mediator;
         mediator.addListener(new HostGameServerMessengerListener());

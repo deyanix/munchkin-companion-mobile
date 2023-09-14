@@ -9,24 +9,32 @@ import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.module.annotations.ReactModule;
 import com.munchkincompanion.game.controller.GameController;
+import com.munchkincompanion.game.controller.GuestGameController;
 import com.munchkincompanion.game.controller.HostGameController;
 import com.munchkincompanion.game.entity.Device;
+import com.munchkincompanion.game.entity.Player;
+import com.munchkincompanion.game.entity.PlayerData;
 import com.munchkincompanion.game.finder.GameFinder;
 import com.recadel.sjp.common.SjpReceiverGarbageCollector;
 import com.recadel.sjp.discovery.SjpDiscoveryServer;
+import com.recadel.sjp.messenger.SjpMessenger;
 import com.recadel.sjp.messenger.SjpServerMediator;
+import com.recadel.sjp.socket.SjpSocket;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
+import java.net.Socket;
 import java.net.SocketAddress;
 import java.net.SocketException;
+import java.util.concurrent.Executors;
 
 @ReactModule(name = GameModule.NAME)
 public class GameModule extends ReactContextBaseJavaModule {
     public final static String NAME = "GameModule";
     private final ReactApplicationContext reactContext;
     private final ReactEventEmitter eventEmitter;
+    private final SjpReceiverGarbageCollector garbageCollector = new SjpReceiverGarbageCollector();
     private GameController gameController;
     private GameFinder gameFinder;
 
@@ -50,6 +58,7 @@ public class GameModule extends ReactContextBaseJavaModule {
             gameFinder = new GameFinder(socketAddress, eventEmitter);
             gameFinder.start();
         } catch (SocketException e) {
+            e.printStackTrace();
             this.eventEmitter.emit("error", e.getMessage());
         }
     }
@@ -66,7 +75,6 @@ public class GameModule extends ReactContextBaseJavaModule {
     public void startHostGame(ReadableMap map) {
         int port = map.getInt("port");
         try {
-            final SjpReceiverGarbageCollector garbageCollector = new SjpReceiverGarbageCollector();
             SjpDiscoveryServer discoveryServer = new SjpDiscoveryServer(port);
             discoveryServer.setWelcomeRequestPattern(GameFinder.WELCOME_REQUEST_PATTERN);
             discoveryServer.setWelcomeResponsePattern(
@@ -78,15 +86,29 @@ public class GameModule extends ReactContextBaseJavaModule {
             mediator.setGarbageCollector(garbageCollector);
             mediator.start();
 
-            gameController = new HostGameController(discoveryServer, mediator);
+            gameController = new HostGameController(eventEmitter, discoveryServer, mediator);
         } catch (IOException e) {
+            e.printStackTrace();
             this.eventEmitter.emit("error", e.getMessage());
         }
     }
 
     @ReactMethod
     public void startGuestGame(ReadableMap map) {
+        String address = map.getString("address");
+        int port = map.getInt("port");
+        try {
 
+            Socket socket = new Socket(address, port);
+            SjpSocket sjpSocket = new SjpSocket(socket);
+            sjpSocket.applyGarbageCollector(garbageCollector);
+            sjpSocket.setup(Executors.newScheduledThreadPool(2));
+            SjpMessenger messenger = new SjpMessenger(sjpSocket);
+            gameController = new GuestGameController(eventEmitter, messenger);
+        } catch (IOException e) {
+            e.printStackTrace();
+            this.eventEmitter.emit("error", e.getMessage());
+        }
     }
 
     @ReactMethod
@@ -110,6 +132,30 @@ public class GameModule extends ReactContextBaseJavaModule {
         } else {
             callback.invoke(gameController.getPlayers());
         }
+    }
+
+    @ReactMethod
+    public void createPlayer(ReadableMap map) {
+        if (gameController == null) {
+            return;
+        }
+        gameController.createPlayer(PlayerData.fromMap(map));
+    }
+
+    @ReactMethod
+    public void updatePlayer(ReadableMap map) {
+        if (gameController == null) {
+            return;
+        }
+        gameController.updatePlayer(Player.fromMap(map));
+    }
+
+    @ReactMethod
+    public void deletePlayer(int playerId) {
+        if (gameController == null) {
+            return;
+        }
+        gameController.deletePlayer(playerId);
     }
 
     @SuppressWarnings("unused")

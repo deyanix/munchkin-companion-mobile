@@ -4,17 +4,20 @@ import { View } from 'react-native';
 import { useNetInfo } from '@react-native-community/netinfo';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { calculateBroadcast, ipToNumber, numberToIp } from '../../../utilities/ip';
-import GameModule, { MunchkinDevice } from '../../../modules/GameModule/GameModule';
+import GameModule from '../../../modules/GameModule/GameModule';
 import GameEventEmitter, { GameDiscoveryItem } from '../../../modules/GameModule/GameEventEmitter';
 import { DeviceListItem } from '../DeviceListItem';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../../../navigation';
+import { useNavigation } from '@react-navigation/native';
 
-// type JoinRoomNavigationProp = NativeStackNavigationProp<RootStackParamList, 'JoinRoom'>;
+type JoinRoomNavigationProp = NativeStackNavigationProp<RootStackParamList, 'JoinRoom'>;
 
 export function JoinRoomScreen() {
 	const theme = useTheme();
 	const netInfo = useNetInfo();
 	const [devices, setDevices] = useState<GameDiscoveryItem[]>([]);
-	// const navigation = useNavigation<JoinRoomNavigationProp>();
+	const navigation = useNavigation<JoinRoomNavigationProp>();
 
 	const wifiDetails = useMemo(() => {
 		if (netInfo.type === 'wifi' && netInfo.isWifiEnabled) {
@@ -44,12 +47,17 @@ export function JoinRoomScreen() {
 	}, []);
 
 	useEffect(() => {
-
 		if (broadcastAddress) {
 			GameModule.startDiscovery({address: broadcastAddress, port: 10304});
 		}
 		return () => GameModule.closeDiscovery();
 	}, [broadcastAddress]);
+
+	function startSession(item: GameDiscoveryItem) {
+		GameModule.startGuestGame(item);
+		GameModule.closeDiscovery();
+		navigation.navigate('PlayerList');
+	}
 
 	return (
 		<>
@@ -67,7 +75,12 @@ export function JoinRoomScreen() {
 			) : (
 				<>
 					<List.Section>
-						{devices.map(device => <DeviceListItem key={device.address + device.port} discoveryItem={device} onPress={() => {}}/>)}
+						{devices.map(device =>
+							<DeviceListItem
+								key={device.address + device.port}
+								discoveryItem={device}
+								onPress={() => startSession(device)}/>
+						)}
 					</List.Section>
 					<View style={{alignItems: 'center'}}>
 						<ActivityIndicator animating={true} color={MD3DarkTheme.colors.primary} size="large" />

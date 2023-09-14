@@ -1,5 +1,5 @@
 import { EventSubscription, NativeEventEmitter, NativeModules } from 'react-native';
-import { MunchkinDevice } from './GameModule';
+import { MunchkinDevice, MunchkinPlayer } from './GameModule';
 
 export const GameNativeEventEmitter = new NativeEventEmitter(NativeModules.GameModule);
 
@@ -15,5 +15,8 @@ export default {
 	},
 	onError(cb: (message: string) => void): EventSubscription {
 		return GameNativeEventEmitter.addListener('error', cb);
+	},
+	onUpdatePlayer(cb: (players: MunchkinPlayer[]) => void): EventSubscription {
+		return GameNativeEventEmitter.addListener('update-player', cb);
 	},
 };

@@ -1,21 +1,54 @@
 import * as React from 'react';
-import { PropsWithChildren, useCallback, useState } from 'react';
+import { PropsWithChildren, useCallback, useEffect, useState } from 'react';
 import { SessionContext, SessionContextType } from './SessionContext';
-import { MunchkinPlayer, MunchkinPlayerData } from '../../modules/GameModule/GameModule';
+import GameModule, { MunchkinPlayer, MunchkinPlayerData } from '../../modules/GameModule/GameModule';
+import GameEventEmitter from '../../modules/GameModule/GameEventEmitter';
+
+function debounce<F extends (...args: any[]) => void>(func: F, delay: number): F {
+	let timerId: ReturnType<typeof setTimeout>;
+
+	// @ts-ignore
+	return (...args: Parameters<F>): void => {
+		if (!timerId) {
+			func(...args);
+		}
+		clearTimeout(timerId);
+
+		timerId = setTimeout(() => func(...args), delay);
+	};
+};
 
 export const SessionProvider: React.FC<PropsWithChildren> = ({children}) => {
 	const [players, setPlayers] = useState<MunchkinPlayer[]>([]);
 
-	const createPlayer = useCallback(async (player: MunchkinPlayerData) => {
-		// setPlayers(data ?? []);
+	useEffect(() => {
+		const listener = GameEventEmitter.onUpdatePlayer((data) => {
+			console.log('synchro players', data);
+			setPlayers(data);
+		});
+		return () => {
+			listener.remove();
+		};
 	}, []);
 
-	const updatePlayer = useCallback(async (player: MunchkinPlayer) => {
-		// setPlayers(data ?? []);
+	const createPlayer = useCallback(async (player: MunchkinPlayerData) => {
+		GameModule.createPlayer(player);
 	}, []);
+
+	const updatePlayer = useCallback((player: MunchkinPlayer) => {
+		setPlayers(players => ([
+			...players.filter(p => p.id !== player.id),
+			player,
+		]));
+		executePlayer(player);
+	}, []);
+
+	const executePlayer = useCallback(debounce(async (player: MunchkinPlayer) => {
+		GameModule.updatePlayer(player);
+	}, 200), []);
 
 	const deletePlayer = useCallback(async (playerId: number) => {
-		// setPlayers(data ?? []);
+		GameModule.deletePlayer(playerId);
 	}, []);
 
 

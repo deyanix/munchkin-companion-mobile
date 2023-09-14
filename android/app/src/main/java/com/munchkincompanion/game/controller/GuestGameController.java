@@ -3,6 +3,7 @@ package com.munchkincompanion.game.controller;
 import com.munchkincompanion.game.entity.Player;
 import com.munchkincompanion.game.entity.PlayerData;
 import com.munchkincompanion.game.exception.GameException;
+import com.munchkincompanion.game.reactnative.ReactEventEmitter;
 import com.recadel.sjp.messenger.SjpMessenger;
 import com.recadel.sjp.messenger.SjpMessengerReceiver;
 import org.json.JSONArray;
@@ -11,14 +12,14 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class GuestGameController extends GameController {
 	private final SjpMessenger messenger;
 
-	public GuestGameController(SjpMessenger messenger) {
+	public GuestGameController(ReactEventEmitter eventEmitter, SjpMessenger messenger) {
+		super(eventEmitter);
 		this.messenger = messenger;
 		messenger.addReceiver(new GuestGameReceiver());
 	}

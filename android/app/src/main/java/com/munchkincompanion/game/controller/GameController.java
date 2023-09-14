@@ -1,7 +1,14 @@
 package com.munchkincompanion.game.controller;
 
+import com.facebook.react.bridge.Arguments;
+import com.facebook.react.bridge.ReadableMap;
+import com.facebook.react.bridge.WritableArray;
+import com.facebook.react.bridge.WritableMap;
 import com.munchkincompanion.game.entity.Player;
 import com.munchkincompanion.game.entity.PlayerData;
+import com.munchkincompanion.game.reactnative.ReactEventEmitter;
+
+import org.json.JSONArray;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -12,18 +19,14 @@ import java.util.function.Consumer;
 
 public abstract class GameController implements Closeable {
     private final List<Player> players = new ArrayList<>();
-    private final List<Consumer<List<Player>>> consumers = new ArrayList<>();
+    private final ReactEventEmitter eventEmitter;
+
+    protected GameController(ReactEventEmitter eventEmitter) {
+        this.eventEmitter = eventEmitter;
+    }
 
     public List<Player> getPlayers() {
         return players;
-    }
-
-    public void addUpdateListener(Consumer<List<Player>> consumer) {
-        consumers.add(consumer);
-    }
-
-    public void removeUpdateListener(Consumer<List<Player>> consumer) {
-        consumers.remove(consumer);
     }
 
     public abstract void createPlayer(PlayerData player);
@@ -61,6 +64,11 @@ public abstract class GameController implements Closeable {
     }
 
     protected void emitUpdate() {
-        consumers.forEach(consumer -> consumer.accept(players));
+        WritableArray array = Arguments.createArray();
+        players.stream()
+                .map(Player::toMap)
+                .forEach(array::pushMap);
+
+        eventEmitter.emit("update-player", array);
     }
 }
