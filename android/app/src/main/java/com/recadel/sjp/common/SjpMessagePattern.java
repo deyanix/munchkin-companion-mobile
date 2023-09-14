@@ -13,12 +13,20 @@ public class SjpMessagePattern {
 		this.data = data;
 	}
 
+	public SjpMessagePattern(SjpMessageType type, String action) {
+		this(type, action, null);
+	}
+
 	public boolean shallowMatch(SjpMessage message) {
 		return type == message.getType() &&	Objects.equals(action, message.getAction());
 	}
 
 	public boolean match(SjpMessage message) {
 		return shallowMatch(message) &&	Objects.equals(data, message.getData());
+	}
+
+	public SjpMessagePattern withData(Object data) {
+		return new SjpMessagePattern(type, action, data);
 	}
 
 	public SjpMessage createMessage() {

@@ -6,8 +6,8 @@ import java.io.IOException;
 import java.net.DatagramSocket;
 import java.net.SocketAddress;
 import java.net.SocketException;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 public class SjpDiscoveryServer extends SjpDiscoveryConnection {
 	public SjpDiscoveryServer(SocketAddress address) throws SocketException {
@@ -18,11 +18,12 @@ public class SjpDiscoveryServer extends SjpDiscoveryConnection {
 		super(new DatagramSocket(port));
 	}
 
-	public void start(ScheduledExecutorService executorService) {
+	public void start() {
+		final ScheduledExecutorService executorService = Executors.newScheduledThreadPool(2);
 		receive((address, message) -> {
-			if (WELCOME_REQUEST_PATTERN.match(message) && message.getId() != null) {
+			if (welcomeRequestPattern.shallowMatch(message) && message.getId() != null) {
 				try {
-					socket.send(WELCOME_RESPONSE_PATTERN
+					socket.send(welcomeResponsePattern
 							.createMessage((long) message.getId())
 							.toBuffer()
 							.toDatagramPacket(address));

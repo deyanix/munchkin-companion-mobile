@@ -9,6 +9,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
 public class SjpServerMediator implements Closeable {
@@ -26,14 +27,15 @@ public class SjpServerMediator implements Closeable {
         listeners.add(listener);
     }
 
-    public void start(ScheduledExecutorService executorService) {
+    public void start() {
+        final ScheduledExecutorService executorService = Executors.newScheduledThreadPool(1);
         executorService.execute(() -> {
             while (!serverSocket.isClosed() && !executorService.isShutdown()) {
                 try {
                     Socket socket = serverSocket.accept();
                     SjpSocket sjpSocket = new SjpSocket(socket);
                     sjpSocket.applyGarbageCollector(garbageCollector);
-                    sjpSocket.setup(executorService);
+                    sjpSocket.setup(Executors.newSingleThreadScheduledExecutor());
 
                     SjpMessenger messenger = new SjpMessenger(sjpSocket, nextMessengerId++);
                     messenger.addReceiver(new SjpServerMediatorReceiver(messenger));
@@ -82,7 +84,11 @@ public class SjpServerMediator implements Closeable {
         }
 
         @Override
-        public void onRequest(String action, Object data) {
+        public void onRequest(long id, String action, Object data) {
+        }
+
+        @Override
+        public void onResponse(long id, Object data) {
         }
 
         @Override

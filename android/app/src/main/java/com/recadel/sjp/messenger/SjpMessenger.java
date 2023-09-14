@@ -1,5 +1,8 @@
 package com.recadel.sjp.messenger;
 
+import androidx.concurrent.futures.CallbackToFutureAdapter;
+
+import com.google.common.util.concurrent.ListenableFuture;
 import com.recadel.sjp.common.SjpMessage;
 import com.recadel.sjp.common.SjpMessageBuffer;
 import com.recadel.sjp.exception.SjpException;
@@ -9,13 +12,24 @@ import org.json.JSONException;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class SjpMessenger {
     private final long id;
     private final SjpSocket socket;
     private final List<SjpMessengerReceiver> receivers = new ArrayList<>();
+    private final ReadWriteLock lock = new ReentrantReadWriteLock();
+    private final Condition fetchCondition = lock.writeLock().newCondition();
+    private final Map<Long, SjpMessage> responses = new HashMap<Long, SjpMessage>();
+    private final ExecutorService executorService = Executors.newFixedThreadPool(4);
     private long nextRequestId = 1;
 
     public SjpMessenger(SjpSocket socket, long id) {
@@ -40,12 +54,50 @@ public class SjpMessenger {
         emit(action, null);
     }
 
-    public void request(String action, Object data) {
+    public void response(long id, Object data) {
         try {
-            socket.send(SjpMessage.createRequest(action, nextRequestId++, data).toBuffer());
+            socket.send(SjpMessage.createResponse(id, data).toBuffer());
+        } catch (JSONException | IOException ex) {
+            throw new SjpException("Error emitting response", ex);
+        }
+    }
+
+    public void response(long id) {
+        response(id, null);
+    }
+
+    public long request(String action, Object data) {
+        try {
+            final long messageId = nextRequestId++;
+            socket.send(SjpMessage.createRequest(action, messageId, data).toBuffer());
+            return messageId;
+//            return CallbackToFutureAdapter.getFuture(completer -> {
+//                completer.addCancellationListener(() -> {
+//                   lock.writeLock().lock();
+//                   responses.remove(messageId);
+//                   lock.writeLock().unlock();
+//                }, executorService);
+//
+//                SjpMessage message;
+//                lock.readLock().lock();
+//                while ((message = responses.getOrDefault(messageId, null)) == null) {
+//                   lock.writeLock().lock();
+//                   fetchCondition.await();
+//                   lock.writeLock().unlock();
+//                }
+//                lock.readLock().unlock();
+//                lock.writeLock().lock();
+//                responses.remove(messageId);
+//                lock.writeLock().unlock();
+//                return message.getData();
+//            });
         } catch (JSONException | IOException ex) {
             throw new SjpException("Error requesting", ex);
         }
+    }
+
+    public long request(String action) {
+        return request(action, null);
     }
 
     public void addReceiver(SjpMessengerReceiver receiver) {
@@ -76,9 +128,11 @@ public class SjpMessenger {
                         receivers.forEach(receiver -> receiver.onEvent(action, data));
                         break;
                     case REQUEST:
-                        receivers.forEach(receiver -> receiver.onRequest(action, data));
+                        receivers.forEach(receiver -> receiver.onRequest(message.getId(), action, data));
                         break;
-                    // TODO: Implement RESPONSE
+                    case RESPONSE:
+                        receivers.forEach(receiver -> receiver.onResponse(message.getId(), data));
+                        break;
 				}
             } catch (JSONException e) {
                 throw new SjpException(e);

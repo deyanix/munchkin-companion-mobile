@@ -108,10 +108,20 @@ public class HostGameController extends LocalGameController {
         }
 
         @Override
-        public void onRequest(String action, Object data) {
+        public void onRequest(long id, String action, Object data) {
+            switch (action) {
+                case "welcome":
+                    messenger.response(id, Device.getCurrent().toJSON());
+                    break;
+            }
         }
 
-		@Override
+        @Override
+        public void onResponse(long id, Object data) {
+
+        }
+
+        @Override
 		public void onError(Throwable ex) {
 			ex.printStackTrace();
 		}

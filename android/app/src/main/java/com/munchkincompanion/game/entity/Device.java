@@ -2,14 +2,22 @@ package com.munchkincompanion.game.entity;
 
 import android.os.Build;
 
+import com.facebook.react.bridge.Arguments;
+import com.facebook.react.bridge.WritableMap;
+import com.munchkincompanion.game.exception.GameException;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
 public class Device {
-    public static Device fromJSON(JSONObject object) throws JSONException {
-        String manufacturer = object.getString("manufacturer");
-        String model = object.getString("model");
-        return new Device(manufacturer, model);
+    public static Device fromJSON(JSONObject object) {
+        try {
+            String manufacturer = object.getString("manufacturer");
+            String model = object.getString("model");
+            return new Device(manufacturer, model);
+        } catch (JSONException ex) {
+            throw new GameException(ex);
+        }
     }
 
     public static Device getCurrent() {
@@ -32,10 +40,21 @@ public class Device {
         return model;
     }
 
-    public JSONObject toJSON() throws JSONException {
-        JSONObject object = new JSONObject();
-        object.put("manufacturer", manufacturer);
-        object.put("model", model);
-        return object;
+    public JSONObject toJSON() {
+        try {
+            JSONObject object = new JSONObject();
+            object.put("manufacturer", manufacturer);
+            object.put("model", model);
+            return object;
+        } catch (JSONException ex) {
+            throw new GameException(ex);
+        }
+    }
+
+    public WritableMap toMap() {
+        WritableMap map = Arguments.createMap();
+        map.putString("manufacturer", manufacturer);
+        map.putString("model", model);
+        return map;
     }
 }

@@ -88,8 +88,11 @@ public class GuestGameController extends GameController {
 		}
 
 		@Override
-		public void onRequest(String action, Object data) {
+		public void onRequest(long id, String action, Object data) {
+		}
 
+		@Override
+		public void onResponse(long id, Object data) {
 		}
 
 		@Override

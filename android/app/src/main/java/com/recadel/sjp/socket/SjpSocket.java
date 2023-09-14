@@ -25,6 +25,10 @@ public class SjpSocket implements Closeable {
 		this.socket = socket;
 	}
 
+	public Socket getSocket() {
+		return socket;
+	}
+
 	public void close() throws IOException {
 		socket.close();
 	}

@@ -1,5 +1,7 @@
 package com.recadel.sjp.discovery;
 
+import com.recadel.sjp.common.SjpMessage;
+
 import org.json.JSONException;
 
 import java.io.IOException;
@@ -14,20 +16,21 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 
 public class SjpDiscoveryClient extends SjpDiscoveryConnection {
 	private final SocketAddress broadcastAddress;
 	private int identifiersPool = 10;
-	private long interval = 5000L;
+	private long interval;
 	private ScheduledFuture<?> senderFuture;
 
 	public SjpDiscoveryClient(SocketAddress broadcastAddress) throws SocketException {
 		super(new DatagramSocket());
 		this.broadcastAddress = broadcastAddress;
+		this.interval = getReceiverLifetime();
 	}
 
-	public void discover(Consumer<InetSocketAddress> consumer) {
+	public void discover(BiConsumer<InetSocketAddress, SjpMessage> consumer) {
 		final ScheduledExecutorService executorService = Executors.newScheduledThreadPool(2);
 		final int localIdentifiersPool = identifiersPool;
 		Random random = new Random();
@@ -35,16 +38,16 @@ public class SjpDiscoveryClient extends SjpDiscoveryConnection {
 
 		receive((address, message) -> {
 			if (address instanceof InetSocketAddress &&
-					WELCOME_RESPONSE_PATTERN.match(message) &&
+					welcomeResponsePattern.shallowMatch(message) &&
 					requestIds.contains(message.getId())) {
-				consumer.accept((InetSocketAddress) address);
+				consumer.accept((InetSocketAddress) address, message);
 			}
 		}, executorService);
 
 		senderFuture = executorService.scheduleAtFixedRate(() -> {
 			try {
 				long id = random.nextLong();
-				socket.send(WELCOME_REQUEST_PATTERN.createMessage(id).toBuffer().toDatagramPacket(broadcastAddress));
+				socket.send(welcomeRequestPattern.createMessage(id).toBuffer().toDatagramPacket(broadcastAddress));
 				requestIds.add(id);
 				if (requestIds.size() > localIdentifiersPool) {
 					requestIds.poll();

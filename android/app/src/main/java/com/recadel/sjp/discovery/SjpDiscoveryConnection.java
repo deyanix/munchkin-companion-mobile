@@ -20,8 +20,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 
 public abstract class SjpDiscoveryConnection implements Closeable {
-	protected static final SjpMessagePattern WELCOME_REQUEST_PATTERN = new SjpMessagePattern(SjpMessageType.REQUEST, "welcome", "look-for-trouble");
-	protected static final SjpMessagePattern WELCOME_RESPONSE_PATTERN = new SjpMessagePattern(SjpMessageType.RESPONSE, "welcome", "wandering-monster");
+	protected SjpMessagePattern welcomeRequestPattern;// = new SjpMessagePattern(SjpMessageType.REQUEST, "welcome", "look-for-trouble");
+	protected SjpMessagePattern welcomeResponsePattern;// = new SjpMessagePattern(SjpMessageType.RESPONSE, "welcome", "wandering-monster");
 	protected final DatagramSocket socket;
 	private final Map<SocketAddress, SjpReceiver> receivers = new ConcurrentHashMap<>();
 	private int datagramLength = 1024;
@@ -45,6 +45,22 @@ public abstract class SjpDiscoveryConnection implements Closeable {
 
 	public void setReceiverLifetime(long receiverLifetime) {
 		this.receiverLifetime = receiverLifetime;
+	}
+
+	public SjpMessagePattern getWelcomeRequestPattern() {
+		return welcomeRequestPattern;
+	}
+
+	public void setWelcomeRequestPattern(SjpMessagePattern welcomeRequestPattern) {
+		this.welcomeRequestPattern = welcomeRequestPattern;
+	}
+
+	public SjpMessagePattern getWelcomeResponsePattern() {
+		return welcomeResponsePattern;
+	}
+
+	public void setWelcomeResponsePattern(SjpMessagePattern welcomeResponsePattern) {
+		this.welcomeResponsePattern = welcomeResponsePattern;
 	}
 
 	public void close() {

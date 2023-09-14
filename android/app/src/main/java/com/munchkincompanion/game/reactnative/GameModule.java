@@ -1,23 +1,18 @@
 package com.munchkincompanion.game.reactnative;
 
-import android.content.Context;
-import android.net.ConnectivityManager;
-import android.net.wifi.WifiManager;
-import android.os.Build;
-
 import androidx.annotation.NonNull;
 
-import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.ReadableMap;
-import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.module.annotations.ReactModule;
 import com.munchkincompanion.game.controller.GameController;
 import com.munchkincompanion.game.controller.HostGameController;
-import com.recadel.sjp.discovery.SjpDiscoveryClient;
+import com.munchkincompanion.game.entity.Device;
+import com.munchkincompanion.game.finder.GameFinder;
+import com.recadel.sjp.common.SjpReceiverGarbageCollector;
 import com.recadel.sjp.discovery.SjpDiscoveryServer;
 import com.recadel.sjp.messenger.SjpServerMediator;
 
@@ -26,18 +21,14 @@ import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.SocketAddress;
 import java.net.SocketException;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 @ReactModule(name = GameModule.NAME)
 public class GameModule extends ReactContextBaseJavaModule {
     public final static String NAME = "GameModule";
-    private final ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
     private final ReactApplicationContext reactContext;
     private final ReactEventEmitter eventEmitter;
     private GameController gameController;
-    private SjpDiscoveryClient discoveryClient;
+    private GameFinder gameFinder;
 
     public GameModule(ReactApplicationContext reactContext) {
         this.reactContext = reactContext;
@@ -56,13 +47,8 @@ public class GameModule extends ReactContextBaseJavaModule {
         int port = map.getInt("port");
         SocketAddress socketAddress = new InetSocketAddress(address, port);
         try {
-            discoveryClient = new SjpDiscoveryClient(socketAddress);
-            discoveryClient.discover(addr -> {
-                WritableMap result = Arguments.createMap();
-                result.putString("address", addr.getAddress().getHostAddress());
-                result.putInt("port", addr.getPort());
-                eventEmitter.emit("discovery", result);
-            });
+            gameFinder = new GameFinder(socketAddress, eventEmitter);
+            gameFinder.start();
         } catch (SocketException e) {
             this.eventEmitter.emit("error", e.getMessage());
         }
@@ -70,22 +56,28 @@ public class GameModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void closeDiscovery() {
-        if (discoveryClient != null) {
-            discoveryClient.close();
+        if (gameFinder != null) {
+            gameFinder.close();
         }
-        discoveryClient = null;
+        gameFinder = null;
     }
 
     @ReactMethod
     public void startHostGame(ReadableMap map) {
         int port = map.getInt("port");
         try {
-            final ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
+            final SjpReceiverGarbageCollector garbageCollector = new SjpReceiverGarbageCollector();
             SjpDiscoveryServer discoveryServer = new SjpDiscoveryServer(port);
-            discoveryServer.start(executorService);
+            discoveryServer.setWelcomeRequestPattern(GameFinder.WELCOME_REQUEST_PATTERN);
+            discoveryServer.setWelcomeResponsePattern(
+                    GameFinder.WELCOME_RESPONSE_PATTERN.withData(Device.getCurrent().toJSON()));
+            discoveryServer.start();
+
             ServerSocket serverSocket = new ServerSocket(port);
             SjpServerMediator mediator = new SjpServerMediator(serverSocket);
-            mediator.start(executorService);
+            mediator.setGarbageCollector(garbageCollector);
+            mediator.start();
+
             gameController = new HostGameController(discoveryServer, mediator);
         } catch (IOException e) {
             this.eventEmitter.emit("error", e.getMessage());
