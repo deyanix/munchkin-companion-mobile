@@ -1,6 +1,6 @@
-<div style="text-align: center">
+<p align="center">
     <img src="docs/logo.png" alt="Munchkin Companion Logo" width="128" style="background: rgba(208, 188, 255, 1); border-radius: 16px"  />
-</div>
+</p>
 
 # Munchkin Companion
 **Munchkin Companion** is an application that allows you to count levels with your friends while playing Munchkin! 
