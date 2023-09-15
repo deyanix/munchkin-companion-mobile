@@ -26,6 +26,11 @@ public class LocalGameController extends GameController {
         deleteLocallyPlayer(playerId);
     }
 
+    @Override
+    public String getName() {
+        return "LOCAL";
+    }
+
     protected Player createLocallyPlayer(PlayerData data) {
         Player player = new Player(nextPlayerId++, data);
         appendLocallyPlayer(player);

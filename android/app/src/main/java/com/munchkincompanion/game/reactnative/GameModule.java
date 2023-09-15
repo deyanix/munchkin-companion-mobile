@@ -1,12 +1,18 @@
 package com.munchkincompanion.game.reactnative;
 
+import android.content.Context;
+import android.content.Intent;
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 
+import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.ReadableMap;
+import com.facebook.react.bridge.WritableArray;
 import com.facebook.react.module.annotations.ReactModule;
 import com.munchkincompanion.game.controller.GameController;
 import com.munchkincompanion.game.controller.GuestGameController;
@@ -15,6 +21,7 @@ import com.munchkincompanion.game.entity.Device;
 import com.munchkincompanion.game.entity.Player;
 import com.munchkincompanion.game.entity.PlayerData;
 import com.munchkincompanion.game.finder.GameFinder;
+import com.munchkincompanion.game.foreground.GameForegroundService;
 import com.recadel.sjp.common.SjpReceiverGarbageCollector;
 import com.recadel.sjp.discovery.SjpDiscoveryServer;
 import com.recadel.sjp.messenger.SjpMessenger;
@@ -51,6 +58,7 @@ public class GameModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void startDiscovery(ReadableMap map) {
+        Log.d("Munchkin-Game", "Start a discovery server");
         String address = map.getString("address");
         int port = map.getInt("port");
         SocketAddress socketAddress = new InetSocketAddress(address, port);
@@ -65,6 +73,7 @@ public class GameModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void closeDiscovery() {
+        Log.d("Munchkin-Game", "Close a discovery server");
         if (gameFinder != null) {
             gameFinder.close();
         }
@@ -73,8 +82,14 @@ public class GameModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void startHostGame(ReadableMap map) {
+        Log.d("Munchkin-Game", "Start a host game");
         int port = map.getInt("port");
         try {
+            Context context = reactContext.getApplicationContext();
+            Intent intent = new Intent(context, GameForegroundService.class)
+                    .setAction(GameForegroundService.ACTION_START_SERVICE);
+            context.startService(intent);
+
             SjpDiscoveryServer discoveryServer = new SjpDiscoveryServer(port);
             discoveryServer.setWelcomeRequestPattern(GameFinder.WELCOME_REQUEST_PATTERN);
             discoveryServer.setWelcomeResponsePattern(
@@ -95,6 +110,7 @@ public class GameModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void startGuestGame(ReadableMap map) {
+        Log.d("Munchkin-Game", "Start a guest game");
         String address = map.getString("address");
         int port = map.getInt("port");
         try {
@@ -115,11 +131,17 @@ public class GameModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void closeGame() {
+        Log.d("Munchkin-Game", "Close a game");
         if (gameController == null) {
             return;
         }
 
         try {
+            Context context = reactContext.getApplicationContext();
+            Intent intent = new Intent(context, GameForegroundService.class)
+                    .setAction(GameForegroundService.ACTION_STOP_SERVICE);
+            context.stopService(intent);
+
             gameController.close();
         } catch (IOException e) {
             this.eventEmitter.emit("error", e.getMessage());
@@ -129,15 +151,33 @@ public class GameModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void getPlayers(Callback callback) {
+        Log.d("Munchkin-Game", "Get players");
         if (gameController == null) {
             callback.invoke();
         } else {
-            callback.invoke(gameController.getPlayers());
+            WritableArray array = Arguments.createArray();
+            gameController.getPlayers()
+                    .stream()
+                    .map(Player::toMap)
+                    .forEach(array::pushMap);
+
+            callback.invoke(array);
+        }
+    }
+
+    @ReactMethod
+    public void getControllerType(Callback callback) {
+        Log.d("Munchkin-Game", "Get controller type");
+        if (gameController == null) {
+            callback.invoke();
+        } else {
+            callback.invoke(gameController.getName());
         }
     }
 
     @ReactMethod
     public void createPlayer(ReadableMap map) {
+        Log.d("Munchkin-Game", "Create player");
         if (gameController == null) {
             return;
         }
@@ -146,6 +186,7 @@ public class GameModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void updatePlayer(ReadableMap map) {
+        Log.d("Munchkin-Game", "Update player");
         if (gameController == null) {
             return;
         }
@@ -154,6 +195,7 @@ public class GameModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void deletePlayer(int playerId) {
+        Log.d("Munchkin-Game", "Delete player");
         if (gameController == null) {
             return;
         }

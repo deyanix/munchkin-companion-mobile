@@ -1,4 +1,5 @@
 import { NativeModule, NativeModules } from 'react-native';
+import { SessionControllerType } from '../../components/Session/SessionContext';
 
 const {GameModule} = NativeModules;
 
@@ -46,7 +47,9 @@ export interface GameModuleInterface extends NativeModule {
 	createPlayer(player: MunchkinPlayerData): void;
 	updatePlayer(player: MunchkinPlayer): void;
 	deletePlayer(playerId: number): void;
-	getPlayers(cb: () => MunchkinPlayer[]): void;
+
+	getPlayers(cb: (data: MunchkinPlayer[]) => void): void;
+	getControllerType(cb: (data: SessionControllerType) => void): void;
 }
 
 export default GameModule as GameModuleInterface;

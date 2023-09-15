@@ -14,7 +14,7 @@ export function HomeScreen() {
 
 	const onCreateRoom = useCallback(() => {
 			startHostGame({ port: 10304 });
-			navigation.replace('PlayerList');
+			navigation.push('PlayerList');
 		},[navigation, startHostGame]);
 
 	return (

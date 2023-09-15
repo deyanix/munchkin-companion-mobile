@@ -57,7 +57,7 @@ export function JoinRoomScreen() {
 	function startSession(item: GameDiscoveryItem) {
 		startGuestGame(item);
 		GameModule.closeDiscovery();
-		navigation.navigate('PlayerList');
+		navigation.replace('PlayerList');
 	}
 
 	return (

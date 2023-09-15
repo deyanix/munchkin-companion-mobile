@@ -49,6 +49,11 @@ public class HostGameController extends LocalGameController {
         mediator.broadcast("players/delete", playerId);
     }
 
+    @Override
+    public String getName() {
+        return "HOST";
+    }
+
     private JSONArray getJSONPlayers() {
         try {
             return new JSONArray(getPlayers().stream().map(Player::toJSON).toArray());

@@ -7,9 +7,11 @@
 ## To Do
 - [X] Discovery mechanism
 - [X] Counting levels via TCP
-- [ ] Background tasks
+- [X] Background tasks
+- [ ] Handle disconnection
 - [ ] Store last game
 - [ ] Local mode
+- [ ] Refactor ugly code
 
 ## Disclaimer
 All trademarks are the property of their respective owners.

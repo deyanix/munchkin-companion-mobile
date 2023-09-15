@@ -8,6 +8,9 @@ import GameModule, {
 	MunchkinPlayerData
 } from '../../modules/GameModule/GameModule';
 import GameEventEmitter from '../../modules/GameModule/GameEventEmitter';
+import { useNavigation } from '@react-navigation/native';
+import { RootStackParamList } from '../../navigation';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 function debounce<F extends (...args: any[]) => void>(func: F, delay: number): F {
 	let timerId: ReturnType<typeof setTimeout>;
@@ -25,11 +28,24 @@ function debounce<F extends (...args: any[]) => void>(func: F, delay: number): F
 
 const executePlayer = debounce(GameModule.updatePlayer, 1000);
 
+
+type SessionProviderNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Home'>;
+
 export const SessionProvider: React.FC<PropsWithChildren> = ({children}) => {
 	const [controllerType, setControllerType] = useState<SessionControllerType>();
 	const [players, setPlayers] = useState<MunchkinPlayer[]>([]);
+	const navigation = useNavigation<SessionProviderNavigationProp>();
 
 	useEffect(() => {
+		GameModule.getPlayers(data => setPlayers(data));
+		GameModule.getControllerType(data => {
+			setControllerType(data);
+			console.log('navigate', data);
+			if (data) {
+				navigation.navigate('PlayerList');
+			}
+		});
+
 		const listener = GameEventEmitter.onUpdatePlayer((data) => {
 			console.log('[Session context] Synchronize players', data);
 			setPlayers(data);
@@ -37,7 +53,7 @@ export const SessionProvider: React.FC<PropsWithChildren> = ({children}) => {
 		return () => {
 			listener.remove();
 		};
-	}, []);
+	}, [navigation]);
 
 	const createPlayer = useCallback((player: MunchkinPlayerData) => {
 		console.log('[Session context] Create player', player);
@@ -77,6 +93,7 @@ export const SessionProvider: React.FC<PropsWithChildren> = ({children}) => {
 	}, []);
 
 	const closeGame = useCallback(() => {
+		console.log('Close game');
 		GameModule.closeGame();
 		setControllerType(undefined);
 	}, []);

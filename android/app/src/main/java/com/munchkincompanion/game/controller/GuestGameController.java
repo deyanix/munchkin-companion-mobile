@@ -45,6 +45,11 @@ public class GuestGameController extends GameController {
 		messenger.emit("players/delete", playerId);
 	}
 
+	@Override
+	public String getName() {
+		return "GUEST";
+	}
+
 	private void replaceJSONPlayers(JSONArray array) {
 		replacePlayers(fromJSONPlayers(array));
 	}

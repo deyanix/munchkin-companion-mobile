@@ -35,6 +35,8 @@ public abstract class GameController implements Closeable {
 
     public abstract void deletePlayer(int playerId);
 
+    public abstract String getName();
+
     public void close() throws IOException {
         // Nothing.
     }
