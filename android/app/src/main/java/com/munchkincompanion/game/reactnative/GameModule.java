@@ -98,13 +98,15 @@ public class GameModule extends ReactContextBaseJavaModule {
         String address = map.getString("address");
         int port = map.getInt("port");
         try {
-
             Socket socket = new Socket(address, port);
             SjpSocket sjpSocket = new SjpSocket(socket);
             sjpSocket.applyGarbageCollector(garbageCollector);
-            sjpSocket.setup(Executors.newScheduledThreadPool(2));
+            sjpSocket.setup();
             SjpMessenger messenger = new SjpMessenger(sjpSocket);
-            gameController = new GuestGameController(eventEmitter, messenger);
+            GuestGameController gameController = new GuestGameController(eventEmitter, messenger);
+            gameController.synchronizePlayers();
+
+            this.gameController = gameController;
         } catch (IOException e) {
             e.printStackTrace();
             this.eventEmitter.emit("error", e.getMessage());

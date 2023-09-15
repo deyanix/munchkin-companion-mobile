@@ -26,10 +26,6 @@ public class SjpMessenger {
     private final long id;
     private final SjpSocket socket;
     private final List<SjpMessengerReceiver> receivers = new ArrayList<>();
-    private final ReadWriteLock lock = new ReentrantReadWriteLock();
-    private final Condition fetchCondition = lock.writeLock().newCondition();
-    private final Map<Long, SjpMessage> responses = new HashMap<Long, SjpMessage>();
-    private final ExecutorService executorService = Executors.newFixedThreadPool(4);
     private long nextRequestId = 1;
 
     public SjpMessenger(SjpSocket socket, long id) {
@@ -71,26 +67,6 @@ public class SjpMessenger {
             final long messageId = nextRequestId++;
             socket.send(SjpMessage.createRequest(action, messageId, data).toBuffer());
             return messageId;
-//            return CallbackToFutureAdapter.getFuture(completer -> {
-//                completer.addCancellationListener(() -> {
-//                   lock.writeLock().lock();
-//                   responses.remove(messageId);
-//                   lock.writeLock().unlock();
-//                }, executorService);
-//
-//                SjpMessage message;
-//                lock.readLock().lock();
-//                while ((message = responses.getOrDefault(messageId, null)) == null) {
-//                   lock.writeLock().lock();
-//                   fetchCondition.await();
-//                   lock.writeLock().unlock();
-//                }
-//                lock.readLock().unlock();
-//                lock.writeLock().lock();
-//                responses.remove(messageId);
-//                lock.writeLock().unlock();
-//                return message.getData();
-//            });
         } catch (JSONException | IOException ex) {
             throw new SjpException("Error requesting", ex);
         }

@@ -11,10 +11,12 @@ import java.io.InputStream;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
 public class SjpSocket implements Closeable {
 	private static final int BUFFER_SIZE = 1024;
+	private final ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
 	private final Socket socket;
 	private final List<SjpSocketListener> listeners = new ArrayList<>();
 	private final SjpReceiver receiver = new SjpReceiver();
@@ -31,6 +33,7 @@ public class SjpSocket implements Closeable {
 
 	public void close() throws IOException {
 		socket.close();
+		executorService.shutdown();
 	}
 
 	public void addListener(SjpSocketListener listener) {
@@ -66,7 +69,7 @@ public class SjpSocket implements Closeable {
 		}
 	}
 
-	public void setup(ScheduledExecutorService executorService) {
+	public void setup() {
 		if (garbageCollector != null) {
 			garbageCollector.start();
 		}

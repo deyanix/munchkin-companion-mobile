@@ -3,19 +3,19 @@ import { View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { RootStackParamList } from '../../navigation';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import GameModule from '../../modules/GameModule/GameModule';
 import { useCallback } from 'react';
+import { useSessionContext } from '../../components/Session/SessionContext';
 
 type HomeNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Home'>;
 
 export function HomeScreen() {
 	const navigation = useNavigation<HomeNavigationProp>();
+	const {startHostGame} = useSessionContext();
 
 	const onCreateRoom = useCallback(() => {
-		GameModule.startHostGame({port: 10304});
-		navigation.navigate('PlayerList');
-		return () => GameModule.closeHostGame();
-	}, [navigation]);
+			startHostGame({ port: 10304 });
+			navigation.replace('PlayerList');
+		},[navigation, startHostGame]);
 
 	return (
 		<>

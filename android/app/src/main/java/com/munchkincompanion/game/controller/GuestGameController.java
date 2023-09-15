@@ -1,5 +1,7 @@
 package com.munchkincompanion.game.controller;
 
+import android.util.Log;
+
 import com.munchkincompanion.game.entity.Player;
 import com.munchkincompanion.game.entity.PlayerData;
 import com.munchkincompanion.game.exception.GameException;
@@ -68,6 +70,8 @@ public class GuestGameController extends GameController {
 	class GuestGameReceiver implements SjpMessengerReceiver {
 		@Override
 		public void onEvent(String action, Object data) {
+			Log.d("MunchkinCompanion-Guest",
+					String.format("Received event (action: %s, data: %s)", action, data));
 			switch (action) {
 				case "players/create":
 					assert data instanceof JSONObject;
@@ -90,19 +94,24 @@ public class GuestGameController extends GameController {
 
 		@Override
 		public void onRequest(long id, String action, Object data) {
+			Log.d("MunchkinCompanion-Guest",
+					String.format("Received request (id: %d, action: %s, data: %s)", id, action, data));
 		}
 
 		@Override
 		public void onResponse(long id, Object data) {
+			Log.d("MunchkinCompanion-Guest",
+					String.format("Received response (id: %d, data: %s)", id, data));
 		}
 
 		@Override
 		public void onError(Throwable ex) {
-			ex.printStackTrace();
+			Log.e("MunchkinCompanion-Guest", "Messenger error", ex);
 		}
 
 		@Override
 		public void onClose() {
+			Log.d("MunchkinCompanion-Guest", "Closed messenger");
 		}
 	}
 }

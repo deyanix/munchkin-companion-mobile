@@ -1,5 +1,7 @@
 package com.munchkincompanion.game.controller;
 
+import android.util.Log;
+
 import com.munchkincompanion.game.entity.Device;
 import com.munchkincompanion.game.entity.Player;
 import com.munchkincompanion.game.entity.PlayerData;
@@ -64,17 +66,19 @@ public class HostGameController extends LocalGameController {
     class HostGameServerMessengerListener implements SjpServerMessengerListener {
         @Override
         public void onConnect(SjpMessenger messenger) {
+            Log.d("MunchkinCompanion-Host", "Connected device " + messenger.getSocket().getSocket().getInetAddress().getHostAddress());
             messenger.addReceiver(new HostGameMessengerReceiver(messenger));
             messenger.emit("welcome", Device.getCurrent());
         }
 
         @Override
         public void onClose() {
+            Log.d("MunchkinCompanion-Host", "Closed game");
         }
 
         @Override
         public void onError(Throwable ex) {
-			ex.printStackTrace();
+            Log.e("MunchkinCompanion-Host", "Server mediator error", ex);
         }
     }
 
@@ -87,11 +91,14 @@ public class HostGameController extends LocalGameController {
 
         @Override
         public void onEvent(String action, Object data) {
+            Log.d("MunchkinCompanion-Host",
+                    String.format("Received event (action: %s, data: %s)", action, data));
+
 			switch (action) {
                 case "players/create":
 					assert data instanceof JSONObject;
 					Player player = createLocallyPlayer(PlayerData.fromJSON((JSONObject) data));
-					mediator.broadcast("players/create", player);
+					mediator.broadcast("players/create", player.toJSON());
 				    break;
                 case "players/update":
                     assert data instanceof JSONObject;
@@ -111,6 +118,9 @@ public class HostGameController extends LocalGameController {
 
         @Override
         public void onRequest(long id, String action, Object data) {
+            Log.d("MunchkinCompanion-Host",
+                    String.format("Received request (id: %d, action: %s, data: %s)", id, action, data));
+
             switch (action) {
                 case "welcome":
                     messenger.response(id, Device.getCurrent().toJSON());
@@ -120,12 +130,13 @@ public class HostGameController extends LocalGameController {
 
         @Override
         public void onResponse(long id, Object data) {
-
+            Log.d("MunchkinCompanion-Host",
+                    String.format("Received response (id: %d, data: %s)", id, data));
         }
 
         @Override
 		public void onError(Throwable ex) {
-			ex.printStackTrace();
+            Log.e("MunchkinCompanion-Host", "Messenger error", ex);
 		}
 
 		@Override

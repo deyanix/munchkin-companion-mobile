@@ -1,4 +1,4 @@
-import { NativeEventEmitter, NativeModule, NativeModules } from 'react-native';
+import { NativeModule, NativeModules } from 'react-native';
 
 const {GameModule} = NativeModules;
 
@@ -38,9 +38,11 @@ export interface MunchkinDevice {
 export interface GameModuleInterface extends NativeModule {
 	startDiscovery(data: DiscoveryClientConstructor): void;
 	closeDiscovery(): void;
+
 	startHostGame(data: HostGameConstructor): void;
-	closeHostGame(): void;
 	startGuestGame(data: GuestGameConstructor): void;
+	closeGame(): void;
+
 	createPlayer(player: MunchkinPlayerData): void;
 	updatePlayer(player: MunchkinPlayer): void;
 	deletePlayer(playerId: number): void;

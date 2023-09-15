@@ -23,6 +23,7 @@ public class SjpDiscoveryClient extends SjpDiscoveryConnection {
 	private int identifiersPool = 10;
 	private long interval;
 	private ScheduledFuture<?> senderFuture;
+	private ScheduledExecutorService executorService;
 
 	public SjpDiscoveryClient(SocketAddress broadcastAddress) throws SocketException {
 		super(new DatagramSocket());
@@ -31,7 +32,8 @@ public class SjpDiscoveryClient extends SjpDiscoveryConnection {
 	}
 
 	public void discover(BiConsumer<InetSocketAddress, SjpMessage> consumer) {
-		final ScheduledExecutorService executorService = Executors.newScheduledThreadPool(2);
+		executorService = Executors.newScheduledThreadPool(2);
+
 		final int localIdentifiersPool = identifiersPool;
 		Random random = new Random();
 		Queue<Long> requestIds = new ConcurrentLinkedQueue<>();
@@ -60,6 +62,9 @@ public class SjpDiscoveryClient extends SjpDiscoveryConnection {
 	public void close() {
 		super.close();
 		senderFuture.cancel(false);
+		if (executorService != null) {
+			executorService.shutdown();
+		}
 	}
 
 	public int getIdentifiersPool() {

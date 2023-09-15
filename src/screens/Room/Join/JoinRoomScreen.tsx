@@ -10,6 +10,7 @@ import { DeviceListItem } from '../DeviceListItem';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../../navigation';
 import { useNavigation } from '@react-navigation/native';
+import { useSessionContext } from '../../../components/Session/SessionContext';
 
 type JoinRoomNavigationProp = NativeStackNavigationProp<RootStackParamList, 'JoinRoom'>;
 
@@ -18,6 +19,7 @@ export function JoinRoomScreen() {
 	const netInfo = useNetInfo();
 	const [devices, setDevices] = useState<GameDiscoveryItem[]>([]);
 	const navigation = useNavigation<JoinRoomNavigationProp>();
+	const {startGuestGame} = useSessionContext();
 
 	const wifiDetails = useMemo(() => {
 		if (netInfo.type === 'wifi' && netInfo.isWifiEnabled) {
@@ -39,7 +41,6 @@ export function JoinRoomScreen() {
 	useEffect(() => {
 		const listener = GameEventEmitter.onDiscovery((event) => {
 			setDevices(event);
-			console.log(event);
 		});
 		return () => {
 			listener.remove();
@@ -54,7 +55,7 @@ export function JoinRoomScreen() {
 	}, [broadcastAddress]);
 
 	function startSession(item: GameDiscoveryItem) {
-		GameModule.startGuestGame(item);
+		startGuestGame(item);
 		GameModule.closeDiscovery();
 		navigation.navigate('PlayerList');
 	}

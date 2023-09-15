@@ -10,6 +10,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
 public class SjpDiscoveryServer extends SjpDiscoveryConnection {
+	private ScheduledExecutorService executorService;
+
 	public SjpDiscoveryServer(SocketAddress address) throws SocketException {
 		super(new DatagramSocket(address));
 	}
@@ -19,7 +21,7 @@ public class SjpDiscoveryServer extends SjpDiscoveryConnection {
 	}
 
 	public void start() {
-		final ScheduledExecutorService executorService = Executors.newScheduledThreadPool(2);
+		executorService = Executors.newScheduledThreadPool(2);
 		receive((address, message) -> {
 			if (welcomeRequestPattern.shallowMatch(message) && message.getId() != null) {
 				try {
@@ -31,5 +33,13 @@ public class SjpDiscoveryServer extends SjpDiscoveryConnection {
 				}
 			}
 		}, executorService);
+	}
+
+	@Override
+	public void close() {
+		super.close();
+		if (executorService != null) {
+			executorService.shutdown();
+		}
 	}
 }

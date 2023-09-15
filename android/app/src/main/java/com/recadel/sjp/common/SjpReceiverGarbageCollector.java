@@ -11,17 +11,9 @@ import java.util.concurrent.TimeUnit;
 
 public class SjpReceiverGarbageCollector {
 	private final List<SjpReceiver> receivers = new CopyOnWriteArrayList<>();
-	private final ScheduledExecutorService executorService;
+	private final ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
 	private long receiverLifetime = 5000L;
 	private ScheduledFuture<?> future;
-
-	public SjpReceiverGarbageCollector(ScheduledExecutorService executorService) {
-		this.executorService = executorService;
-	}
-
-	public SjpReceiverGarbageCollector() {
-		this(Executors.newSingleThreadScheduledExecutor());
-	}
 
 	public long getReceiverLifetime() {
 		return receiverLifetime;
@@ -55,6 +47,7 @@ public class SjpReceiverGarbageCollector {
 	}
 
 	public void stop() {
+		executorService.shutdown();
 		future.cancel(false);
 		future = null;
 	}

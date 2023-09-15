@@ -1,18 +1,36 @@
 import { createContext, useContext } from 'react';
-import { MunchkinPlayer, MunchkinPlayerData } from '../../modules/GameModule/GameModule';
+import {
+	GuestGameConstructor,
+	HostGameConstructor,
+	MunchkinPlayer,
+	MunchkinPlayerData
+} from '../../modules/GameModule/GameModule';
+
+export type SessionControllerType = 'HOST' | 'GUEST' | 'LOCAL'
 
 export interface SessionContextType {
+	controllerType?: SessionControllerType;
 	players: MunchkinPlayer[];
-	createPlayer(player: MunchkinPlayerData): Promise<void>;
-	updatePlayer(player: MunchkinPlayer): Promise<void>;
-	deletePlayer(playerId: number): Promise<void>;
+	createPlayer(player: MunchkinPlayerData): void;
+	updatePlayer(player: MunchkinPlayer): void;
+	deletePlayer(playerId: number): void;
+
+	startHostGame(data: HostGameConstructor): void;
+	startGuestGame(data: GuestGameConstructor): void;
+	startLocalGame(): void;
+	closeGame(): void;
 }
 
 export const SessionContext = createContext<SessionContextType>({
 	players: [],
-	createPlayer: async () => {},
-	updatePlayer: async () => {},
-	deletePlayer: async () => {},
+	createPlayer: () => {},
+	updatePlayer: () => {},
+	deletePlayer: () => {},
+
+	startHostGame: () => {},
+	startGuestGame: () => {},
+	startLocalGame: () => {},
+	closeGame: () => {},
 });
 
 export const useSessionContext = (): SessionContextType => useContext(SessionContext);

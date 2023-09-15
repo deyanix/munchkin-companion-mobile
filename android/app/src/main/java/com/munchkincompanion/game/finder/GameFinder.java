@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 public class GameFinder implements Closeable {
@@ -36,6 +37,7 @@ public class GameFinder implements Closeable {
     private final Map<InetSocketAddress, GameFinderItem> sockets = new HashMap<>();
     private final SjpDiscoveryClient discoveryClient;
     private final ReactEventEmitter eventEmitter;
+    private ScheduledExecutorService executorService;
 
     public GameFinder(SocketAddress socketAddress, ReactEventEmitter eventEmitter) throws SocketException {
         this.eventEmitter = eventEmitter;
@@ -50,7 +52,9 @@ public class GameFinder implements Closeable {
 
         final long interval = discoveryClient.getInterval();
         final long deviceLifetime = interval * 2;
-        Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(() -> {
+
+        executorService = Executors.newSingleThreadScheduledExecutor();
+        executorService.scheduleAtFixedRate(() -> {
             Iterator<Map.Entry<InetSocketAddress, GameFinderItem>> iterator = sockets.entrySet().iterator();
             while (iterator.hasNext()) {
                 Map.Entry<InetSocketAddress, GameFinderItem> entry = iterator.next();
@@ -67,6 +71,9 @@ public class GameFinder implements Closeable {
 
     @Override
     public void close() {
+        if (executorService != null) {
+            executorService.shutdown();
+        }
         discoveryClient.close();
     }
 
