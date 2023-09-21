@@ -6,6 +6,8 @@ import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../navigation';
 import { useSessionContext } from '../../components/Session/SessionContext';
+import { useDialogExecutor } from '../../components/DialogExecutor/DialogExecutorContext';
+import { DeletePlayerDialog } from '../../components/DeletePlayerDialog';
 
 type PlayerNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Player'>;
 type PlayerRouteProp = RouteProp<RootStackParamList, 'Player'>;
@@ -14,6 +16,7 @@ export const PlayerScreen: React.FC = () => {
 	const navigation = useNavigation<PlayerNavigationProp>();
 	const route = useRoute<PlayerRouteProp>();
 	const { players, updatePlayer, deletePlayer } = useSessionContext();
+	const dialogExecutor = useDialogExecutor();
 
 	const player = useMemo(
 		() => players.find(p => p.id === route.params.id),
@@ -27,10 +30,13 @@ export const PlayerScreen: React.FC = () => {
 					<IconButton
 						icon="delete"
 						onPress={() => {
-	            if (player) {
-		            deletePlayer(player.id);
-		            navigation.goBack();
-	            }
+							if (player) {
+								dialogExecutor.create(DeletePlayerDialog)
+									.onOk(() => {
+										deletePlayer(player.id);
+										navigation.goBack();
+									});
+							}
             }}/>
 					<IconButton
 						icon="pencil"

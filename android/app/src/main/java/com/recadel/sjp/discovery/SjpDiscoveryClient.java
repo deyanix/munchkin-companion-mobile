@@ -28,7 +28,7 @@ public class SjpDiscoveryClient extends SjpDiscoveryConnection {
 	public SjpDiscoveryClient(SocketAddress broadcastAddress) throws SocketException {
 		super(new DatagramSocket());
 		this.broadcastAddress = broadcastAddress;
-		this.interval = getReceiverLifetime();
+		this.interval = getReceiverLifetime() / 2;
 	}
 
 	public void discover(BiConsumer<InetSocketAddress, SjpMessage> consumer) {

@@ -117,6 +117,7 @@ public class GuestGameController extends GameController {
 		@Override
 		public void onClose() {
 			Log.d("MunchkinCompanion-Guest", "Closed messenger");
+			eventEmitter.emit("close");
 		}
 	}
 }

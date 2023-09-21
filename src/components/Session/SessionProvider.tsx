@@ -11,6 +11,7 @@ import GameEventEmitter from '../../modules/GameModule/GameEventEmitter';
 import { useNavigation } from '@react-navigation/native';
 import { RootStackParamList } from '../../navigation';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useDialogExecutor } from '../DialogExecutor/DialogExecutorContext';
 
 function debounce<F extends (...args: any[]) => void>(func: F, delay: number): F {
 	let timerId: ReturnType<typeof setTimeout>;
@@ -44,6 +45,10 @@ export const SessionProvider: React.FC<PropsWithChildren> = ({children}) => {
 			if (data) {
 				navigation.navigate('PlayerList');
 			}
+		});
+		GameEventEmitter.onClose(() => {
+			setControllerType(undefined);
+			navigation.navigate('Home');
 		});
 
 		const listener = GameEventEmitter.onUpdatePlayer((data) => {
@@ -84,7 +89,7 @@ export const SessionProvider: React.FC<PropsWithChildren> = ({children}) => {
 	const startGuestGame = useCallback((data: GuestGameConstructor) => {
 		GameModule.startGuestGame(data);
 		setPlayers([]);
-		setControllerType('HOST');
+		setControllerType('GUEST');
 	}, []);
 
 	const startLocalGame = useCallback(() => {

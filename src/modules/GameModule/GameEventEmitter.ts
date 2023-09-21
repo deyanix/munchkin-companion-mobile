@@ -16,6 +16,9 @@ export default {
 	onError(cb: (message: string) => void): EventSubscription {
 		return GameNativeEventEmitter.addListener('error', cb);
 	},
+	onClose(cb: () => void): EventSubscription {
+		return GameNativeEventEmitter.addListener('close', cb);
+	},
 	onUpdatePlayer(cb: (players: MunchkinPlayer[]) => void): EventSubscription {
 		return GameNativeEventEmitter.addListener('update-player', cb);
 	},

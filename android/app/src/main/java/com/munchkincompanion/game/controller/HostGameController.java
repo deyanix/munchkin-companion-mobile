@@ -79,6 +79,7 @@ public class HostGameController extends LocalGameController {
         @Override
         public void onClose() {
             Log.d("MunchkinCompanion-Host", "Closed game");
+            eventEmitter.emit("close");
         }
 
         @Override

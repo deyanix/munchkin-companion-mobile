@@ -1,43 +1,41 @@
 import React, { useEffect } from 'react';
-import { Alert, ScrollView, View } from 'react-native';
+import { ScrollView, View } from 'react-native';
 import PlayerCard from '../../components/Player/PlayerCard';
 import { useSessionContext } from '../../components/Session/SessionContext';
 import { useNavigation } from '@react-navigation/native';
 import { IconButton } from 'react-native-paper';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../navigation';
+import { useDialogExecutor } from '../../components/DialogExecutor/DialogExecutorContext';
+import { CloseSessionDialog } from '../../components/CloseSessionDialog';
 
 type PlayerListNavigationProp = NativeStackNavigationProp<RootStackParamList, 'PlayerList'>;
 export function PlayerListScreen(): React.JSX.Element {
   const navigation = useNavigation<PlayerListNavigationProp>();
-  const {closeGame} = useSessionContext();
+  const { controllerType, closeGame } = useSessionContext();
   const { players } = useSessionContext();
-
+  const dialogExecutor = useDialogExecutor();
 
   useEffect(() => {
     const cancelListener = navigation.addListener('beforeRemove', (e) => {
+      if (controllerType !== 'HOST') {
+        return;
+      }
 
       e.preventDefault();
-      Alert.alert(
-        'Discard changes?',
-        'You have unsaved changes. Are you sure to discard them and leave the screen?',
-        [
-          { text: "Don't leave", style: 'cancel', onPress: () => {} },
-          {
-            text: 'Discard',
-            style: 'destructive',
-            onPress: () => {
-              closeGame();
-              navigation.dispatch(e.data.action);
-            },
-          },
-        ]
-      );
+      dialogExecutor.create(CloseSessionDialog)
+        .onOk(() => {
+          closeGame();
+          navigation.dispatch(e.data.action);
+        });
     });
 
     navigation.setOptions({
+      headerBackVisible: false,
       headerRight: () => (
         <View style={{flexDirection: 'row'}}>
+          {controllerType === 'HOST' &&
+            <IconButton icon="wifi" />}
           <IconButton
             icon="plus"
             onPress={() => navigation.navigate('PlayerCreate')}

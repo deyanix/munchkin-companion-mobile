@@ -23,7 +23,7 @@ export function AppNavigation(): React.JSX.Element {
 					header: ({ options, back }) => {
 						return (
 							<Appbar.Header style={{ display: 'flex', justifyContent: 'space-between', backgroundColor: AppTheme.colors.primary }}>
-								{back ?
+								{back && options.headerBackVisible !== false ?
 									<Appbar.BackAction onPress={() => navigation.goBack()} /> : <View />}
 								{options.title ?
 									<Appbar.Content title={options.title} style={{marginLeft: 12}} /> : undefined }
@@ -35,7 +35,7 @@ export function AppNavigation(): React.JSX.Element {
 			}}>
 			<Stack.Screen name="Home" component={HomeScreen} options={{title: 'Munchkin Companion'}}/>
 			<Stack.Screen name="JoinRoom" component={JoinRoomScreen} options={{title: 'Dołącz'}} />
-			<Stack.Screen name="PlayerList" component={PlayerListScreen} />
+			<Stack.Screen name="PlayerList" component={PlayerListScreen} options={{title: 'Munchkin Companion'}} />
 			<Stack.Screen name="Player" component={PlayerScreen} />
 			<Stack.Screen name="PlayerEdit" component={PlayerEditScreen} />
 			<Stack.Screen name="PlayerCreate" component={PlayerCreateScreen} />

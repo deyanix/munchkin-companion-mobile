@@ -18,8 +18,8 @@ import java.util.List;
 import java.util.function.Consumer;
 
 public abstract class GameController implements Closeable {
+    protected final ReactEventEmitter eventEmitter;
     private final List<Player> players = new ArrayList<>();
-    private final ReactEventEmitter eventEmitter;
 
     protected GameController(ReactEventEmitter eventEmitter) {
         this.eventEmitter = eventEmitter;

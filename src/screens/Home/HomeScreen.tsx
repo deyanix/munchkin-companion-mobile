@@ -13,9 +13,9 @@ export function HomeScreen() {
 	const {startHostGame} = useSessionContext();
 
 	const onCreateRoom = useCallback(() => {
-			startHostGame({ port: 10304 });
-			navigation.push('PlayerList');
-		},[navigation, startHostGame]);
+		startHostGame({ port: 10304 });
+		navigation.push('PlayerList');
+	},[navigation, startHostGame]);
 
 	return (
 		<>

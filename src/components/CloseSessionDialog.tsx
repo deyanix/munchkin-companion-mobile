@@ -1,14 +1,8 @@
 import React from 'react';
-import { Button, Dialog, Portal, Text } from 'react-native-paper';
+import { Button, Dialog, Text } from 'react-native-paper';
+import { DialogProps } from './DialogExecutor/DialogExecutorContext';
 
-export interface CloseSessionDialogProps {
-	visible: boolean;
-	onDismiss?: () => void;
-	onOk?: () => void;
-	onCancel?: () => void;
-}
-
-export const CloseSessionDialog: React.FC<CloseSessionDialogProps> = (props) => {
+export const CloseSessionDialog: React.FC<DialogProps> = (props) => {
 	return (
 		<Dialog visible={props.visible} onDismiss={props.onDismiss}>
 			<Dialog.Title>Opuszczenie pokoju</Dialog.Title>

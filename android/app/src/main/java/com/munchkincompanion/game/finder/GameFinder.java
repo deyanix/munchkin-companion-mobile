@@ -51,7 +51,7 @@ public class GameFinder implements Closeable {
         discoveryClient.discover(this::accept);
 
         final long interval = discoveryClient.getInterval();
-        final long deviceLifetime = interval * 2;
+        final long deviceLifetime = interval * 3;
 
         executorService = Executors.newSingleThreadScheduledExecutor();
         executorService.scheduleAtFixedRate(() -> {
