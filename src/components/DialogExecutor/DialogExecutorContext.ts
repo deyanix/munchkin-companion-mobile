@@ -5,13 +5,13 @@ export type DialogCallback = () => void;
 
 export interface DialogProps {
 	visible: boolean;
-	onOk?: () => void;
+	onOk?: (payload?: any) => void;
 	onDismiss?: () => void;
 	onCancel?: () => void;
 }
 
 export interface DialogExecution {
-	onOk: (cb: DialogCallback) => DialogExecution;
+	onOk: (cb: (payload?: any) => void) => DialogExecution;
 	onDismiss: (cb: DialogCallback) => DialogExecution;
 	onCancel: (cb: DialogCallback) => DialogExecution;
 }

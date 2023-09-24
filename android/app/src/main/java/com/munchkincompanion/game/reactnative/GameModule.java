@@ -11,6 +11,7 @@ import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
+import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.WritableArray;
 import com.facebook.react.module.annotations.ReactModule;
@@ -34,7 +35,11 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketAddress;
 import java.net.SocketException;
+import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @ReactModule(name = GameModule.NAME)
 public class GameModule extends ReactContextBaseJavaModule {
@@ -81,7 +86,7 @@ public class GameModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void startHostGame(ReadableMap map) {
+    public void startHostGame(ReadableMap map, Callback callback) {
         Log.d("Munchkin-Game", "Start a host game");
         int port = map.getInt("port");
         try {
@@ -102,14 +107,16 @@ public class GameModule extends ReactContextBaseJavaModule {
             mediator.start();
 
             gameController = new HostGameController(eventEmitter, discoveryServer, mediator);
+            callback.invoke();
         } catch (IOException e) {
             e.printStackTrace();
             this.eventEmitter.emit("error", e.getMessage());
+            callback.invoke(e.getMessage());
         }
     }
 
     @ReactMethod
-    public void startGuestGame(ReadableMap map) {
+    public void startGuestGame(ReadableMap map, Callback callback) {
         Log.d("Munchkin-Game", "Start a guest game");
         String address = map.getString("address");
         int port = map.getInt("port");
@@ -123,14 +130,16 @@ public class GameModule extends ReactContextBaseJavaModule {
             gameController.synchronizePlayers();
 
             this.gameController = gameController;
+            callback.invoke();
         } catch (IOException e) {
             e.printStackTrace();
             this.eventEmitter.emit("error", e.getMessage());
+            callback.invoke(e.getMessage());
         }
     }
 
     @ReactMethod
-    public void closeGame() {
+    public void closeGame(Callback callback) {
         Log.d("Munchkin-Game", "Close a game");
         if (gameController == null) {
             return;
@@ -143,10 +152,24 @@ public class GameModule extends ReactContextBaseJavaModule {
             context.stopService(intent);
 
             gameController.close();
+            callback.invoke();
         } catch (IOException e) {
             this.eventEmitter.emit("error", e.getMessage());
+            callback.invoke(e.getMessage());
         }
         gameController = null;
+    }
+
+    @ReactMethod
+    public void setPlayers(ReadableArray array) {
+        if (gameController != null) {
+            List<Player> players = IntStream.range(0, array.size())
+                    .mapToObj(array::getMap)
+                    .map(Player::fromMap)
+                    .collect(Collectors.toList());
+
+            gameController.setPlayers(players);
+        }
     }
 
     @ReactMethod

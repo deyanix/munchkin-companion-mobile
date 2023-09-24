@@ -29,6 +29,12 @@ public abstract class GameController implements Closeable {
         return players;
     }
 
+    public void setPlayers(List<Player> newPlayers) {
+        players.clear();
+        players.addAll(newPlayers);
+        emitUpdate();
+    }
+
     public abstract void createPlayer(PlayerData player);
 
     public abstract void updatePlayer(Player player);

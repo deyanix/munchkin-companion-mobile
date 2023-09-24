@@ -11,7 +11,8 @@ import GameEventEmitter from '../../modules/GameModule/GameEventEmitter';
 import { useNavigation } from '@react-navigation/native';
 import { RootStackParamList } from '../../navigation';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { useDialogExecutor } from '../DialogExecutor/DialogExecutorContext';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import GameManager from '../../modules/GameModule/GameManager';
 
 function debounce<F extends (...args: any[]) => void>(func: F, delay: number): F {
 	let timerId: ReturnType<typeof setTimeout>;
@@ -29,7 +30,6 @@ function debounce<F extends (...args: any[]) => void>(func: F, delay: number): F
 
 const executePlayer = debounce(GameModule.updatePlayer, 1000);
 
-
 type SessionProviderNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Home'>;
 
 export const SessionProvider: React.FC<PropsWithChildren> = ({children}) => {
@@ -38,27 +38,40 @@ export const SessionProvider: React.FC<PropsWithChildren> = ({children}) => {
 	const navigation = useNavigation<SessionProviderNavigationProp>();
 
 	useEffect(() => {
-		GameModule.getPlayers(data => setPlayers(data));
-		GameModule.getControllerType(data => {
-			setControllerType(data);
-			console.log('navigate', data);
-			if (data) {
+		(async () => {
+			const backendControllerType = await GameManager.getControllerType();
+			console.log('[Session context] Controller type', backendControllerType);
+			setControllerType(backendControllerType);
+			if (backendControllerType) {
+				const backendPlayers = await GameManager.getPlayers();
+				await storeGame(backendPlayers);
+				console.log('[Session context] Get players', backendPlayers);
+				setPlayers(backendPlayers);
 				navigation.navigate('PlayerList');
+			} else {
+				await closeGame();
 			}
-		});
+		})();
+
 		GameEventEmitter.onClose(() => {
+			console.log('[Session context] On close');
 			setControllerType(undefined);
 			navigation.navigate('Home');
 		});
-
-		const listener = GameEventEmitter.onUpdatePlayer((data) => {
+		const listener = GameEventEmitter.onUpdatePlayer(async (data) => {
 			console.log('[Session context] Synchronize players', data);
+			await storeGame(data);
 			setPlayers(data);
 		});
 		return () => {
 			listener.remove();
 		};
-	}, [navigation]);
+	}, [closeGame, navigation, storeGame]);
+
+	const storeGame = useCallback(async (data: MunchkinPlayer[]) => {
+		await AsyncStorage.setItem('players', JSON.stringify(data));
+		console.log('[Session context] Stored game', data);
+	}, []);
 
 	const createPlayer = useCallback((player: MunchkinPlayerData) => {
 		console.log('[Session context] Create player', player);
@@ -80,28 +93,52 @@ export const SessionProvider: React.FC<PropsWithChildren> = ({children}) => {
 		GameModule.deletePlayer(playerId);
 	}, []);
 
-	const startHostGame = useCallback((data: HostGameConstructor) => {
-		GameModule.startHostGame(data);
+	const startHostGame = useCallback(async (data: HostGameConstructor) => {
+		await GameManager.startHostGame(data);
+		await storeGame([]);
 		setPlayers([]);
 		setControllerType('HOST');
-	}, []);
+		console.log('[Session context] Started host game');
+	}, [storeGame]);
 
-	const startGuestGame = useCallback((data: GuestGameConstructor) => {
-		GameModule.startGuestGame(data);
+	const startGuestGame = useCallback(async (data: GuestGameConstructor) => {
+		await GameManager.startGuestGame(data);
+		await storeGame([]);
 		setPlayers([]);
 		setControllerType('GUEST');
-	}, []);
+		console.log('[Session context] Started guest game');
+	}, [storeGame]);
 
-	const startLocalGame = useCallback(() => {
+	const startLocalGame = useCallback(async () => {
+		await storeGame([]);
 		setPlayers([]);
 		setControllerType('LOCAL');
+		console.log('[Session context] Started local game');
+	}, [storeGame]);
+
+	const closeGame = useCallback(async () => {
+		await GameManager.closeGame();
+		setControllerType(undefined);
+		console.log('[Session context] Closed game');
 	}, []);
 
-	const closeGame = useCallback(() => {
-		console.log('Close game');
-		GameModule.closeGame();
-		setControllerType(undefined);
+	const restoreGame = useCallback(async (): Promise<MunchkinPlayer[] | undefined> => {
+		const data = await AsyncStorage.getItem('players');
+		console.log('[Session context] Get storage item', data);
+		if (data) {
+			return JSON.parse(data);
+		}
+		return undefined;
 	}, []);
+
+	const restoreHostGame = useCallback(async (data: HostGameConstructor) => {
+		const restoredPlayers = (await restoreGame()) ?? [];
+		await GameManager.startHostGame(data);
+		await GameManager.setPlayers(restoredPlayers);
+		console.log('[Session context] Restored game', restoredPlayers);
+		setPlayers(restoredPlayers);
+		setControllerType('HOST');
+	}, [restoreGame]);
 
 	const sessionContext: SessionContextType = {
 		controllerType,
@@ -113,6 +150,8 @@ export const SessionProvider: React.FC<PropsWithChildren> = ({children}) => {
 		startGuestGame,
 		startLocalGame,
 		closeGame,
+		restoreGame,
+		restoreHostGame,
 	};
 
 	return (

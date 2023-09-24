@@ -11,7 +11,7 @@ export interface DialogExecutorItem<P extends DialogProps> {
 }
 
 export interface DialogInternalExecution {
-	ok: DialogCallback[];
+	ok: ((payload?: any) => void)[];
 	cancel: DialogCallback[];
 	dismiss: DialogCallback[];
 }
@@ -81,7 +81,7 @@ export const DialogExecutorProvider: React.FC<PropsWithChildren> = ({children}) 
 							{...d.props}
 							visible={d.visible}
 							key={index}
-							onOk={() => d.execution.ok?.forEach(cb => cb())}
+							onOk={(payload: any) => d.execution.ok?.forEach(cb => cb(payload))}
 							onDismiss={() => d.execution.dismiss?.forEach(cb => cb())}
 							onCancel={() => d.execution.cancel?.forEach(cb => cb())}
 						/>

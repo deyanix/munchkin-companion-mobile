@@ -45,7 +45,7 @@ export function PlayerListScreen(): React.JSX.Element {
     });
 
     return () => cancelListener();
-  }, [closeGame, navigation]);
+  }, [closeGame, controllerType, dialogExecutor, navigation]);
 
   return (
     <ScrollView>

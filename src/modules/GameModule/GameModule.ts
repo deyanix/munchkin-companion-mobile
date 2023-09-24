@@ -40,15 +40,16 @@ export interface GameModuleInterface extends NativeModule {
 	startDiscovery(data: DiscoveryClientConstructor): void;
 	closeDiscovery(): void;
 
-	startHostGame(data: HostGameConstructor): void;
-	startGuestGame(data: GuestGameConstructor): void;
-	closeGame(): void;
+	startHostGame(data: HostGameConstructor, cb: (error?: string) => void): void;
+	startGuestGame(data: GuestGameConstructor, cb: (error?: string) => void): void;
+	closeGame(cb: (error?: string) => void): void;
 
 	createPlayer(player: MunchkinPlayerData): void;
 	updatePlayer(player: MunchkinPlayer): void;
 	deletePlayer(playerId: number): void;
 
 	getPlayers(cb: (data: MunchkinPlayer[]) => void): void;
+	setPlayers(players: MunchkinPlayer[]): void;
 	getControllerType(cb: (data: SessionControllerType) => void): void;
 }
 

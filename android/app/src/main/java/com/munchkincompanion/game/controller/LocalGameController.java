@@ -4,11 +4,22 @@ import com.munchkincompanion.game.entity.Player;
 import com.munchkincompanion.game.entity.PlayerData;
 import com.munchkincompanion.game.reactnative.ReactEventEmitter;
 
+import java.util.List;
+
 public class LocalGameController extends GameController {
     private int nextPlayerId = 1;
 
     public LocalGameController(ReactEventEmitter eventEmitter) {
         super(eventEmitter);
+    }
+
+    @Override
+    public void setPlayers(List<Player> players) {
+        super.setPlayers(players);
+        players.stream()
+                .mapToInt(Player::getId)
+                .max()
+                .ifPresent(maximalId -> nextPlayerId = maximalId + 1);
     }
 
     @Override
