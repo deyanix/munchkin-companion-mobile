@@ -33,7 +33,7 @@ export function HomeScreen() {
 					restoreHostGame({ port: 10304 });
 					navigation.push('PlayerList');
 				}
-			})
+			});
 		} else {
 			startHostGame({ port: 10304 });
 			navigation.push('PlayerList');

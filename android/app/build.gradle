@@ -80,15 +80,23 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
     }
 
-    namespace "com.munchkincompanion"
+    namespace "eu.deyanix.munchkincompanion"
     defaultConfig {
-        applicationId "com.munchkincompanion"
+        applicationId "eu.deyanix.munchkincompanion"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
-        versionName "1.0"
+        versionName "0.1.0"
     }
     signingConfigs {
+        release {
+            if (project.hasProperty('DEYANIX_UPLOAD_STORE_FILE')) {
+                storeFile file(DEYANIX_UPLOAD_STORE_FILE)
+                storePassword DEYANIX_UPLOAD_STORE_PASSWORD
+                keyAlias DEYANIX_UPLOAD_KEY_ALIAS
+                keyPassword DEYANIX_UPLOAD_KEY_PASSWORD
+            }
+        }
         debug {
             storeFile file('debug.keystore')
             storePassword 'android'
@@ -101,9 +109,7 @@ android {
             signingConfig signingConfigs.debug
         }
         release {
-            // Caution! In production, you need to generate your own keystore file.
-            // see https://reactnative.dev/docs/signed-apk-android.
-            signingConfig signingConfigs.debug
+            signingConfig signingConfigs.release
             minifyEnabled enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
         }
